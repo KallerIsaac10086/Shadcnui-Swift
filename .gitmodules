@@ -1,0 +1,3 @@
+[submodule "shadcnui"]
+	path = shadcnui
+	url = https://github.com/shadcn-ui/ui.git

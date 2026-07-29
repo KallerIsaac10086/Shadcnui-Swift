@@ -1,27 +1,12 @@
 import SwiftUI
 
-// MARK: - Drawer
+// MARK: - Drawer Modifier
 
 /// A bottom sheet drawer with snap points. Corresponds to `<Drawer>` in shadcn/ui.
-///
-/// Usage:
-/// ```swift
-/// @State var show = false
-/// Button("Open") { show = true }
-///     .drawer(isPresented: $show, snapPoints: [0.3, 0.6, 1.0]) {
-///         DrawerContent {
-///             DrawerHeader {
-///                 DrawerTitle("Title")
-///                 DrawerDescription("Description")
-///             }
-///         }
-///     }
-/// ```
-public struct DrawerModifier<DrawerContent: View>: ViewModifier {
+public struct DrawerModifier<Content: View>: ViewModifier {
     @Binding var isPresented: Bool
     let snapPoints: [CGFloat]
-    @ViewBuilder let drawer: () -> DrawerContent
-
+    @ViewBuilder let drawer: () -> Content
     @State private var dragOffset: CGFloat = 0
 
     public func body(content: Content) -> some View {
@@ -52,9 +37,11 @@ public struct DrawerModifier<DrawerContent: View>: ViewModifier {
                         )
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: screenHeight * (snapPoints.last ?? 0.5))
+                .frame(maxHeight: UIScreen.main.bounds.height * (snapPoints.last ?? 0.5))
                 .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(UnevenRoundedRectangle(
+                    topLeadingRadius: 16, topTrailingRadius: 16
+                ))
                 .transition(.move(edge: .bottom))
             }
         }
@@ -63,14 +50,6 @@ public struct DrawerModifier<DrawerContent: View>: ViewModifier {
 
     private func dismiss() {
         withAnimation(.easeInOut(duration: 0.2)) { isPresented = false; dragOffset = 0 }
-    }
-
-    private var screenHeight: CGFloat {
-        #if os(macOS)
-        NSScreen.main?.frame.height ?? 800
-        #else
-        UIScreen.main.bounds.height
-        #endif
     }
 }
 
@@ -84,7 +63,7 @@ public extension View {
     }
 }
 
-// MARK: - Drawer Sub-components
+// MARK: - Sub-components
 
 public struct DrawerContent<C: View>: View { @ViewBuilder let c: () -> C; public init(@ViewBuilder c: @escaping () -> C) { self.c = c }; public var body: some View { VStack(alignment: .leading, spacing: 8) { c() }.padding(16) } }
 public struct DrawerHeader<C: View>: View { @ViewBuilder let c: () -> C; public init(@ViewBuilder c: @escaping () -> C) { self.c = c }; public var body: some View { VStack(spacing: 4) { c() } } }

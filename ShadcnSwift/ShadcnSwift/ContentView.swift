@@ -243,11 +243,12 @@ struct Customizer: View {
                                 .frame(width: 80, alignment: .leading)
                                 .foregroundStyle(.secondary)
                             Button(buttonLabel) { }
-                                .shadcnButton(variant: customVariant, size: .default) { label in
+                                .shadcnButton(
+                                    variant: customVariant,
+                                    size: .default,
+                                    cornerRadius: cornerRadius > 0 ? cornerRadius : nil
+                                ) { label in
                                     var view: AnyView = label
-                                    if cornerRadius > 0 {
-                                        view = AnyView(view.cornerRadius(cornerRadius))
-                                    }
                                     if isFullWidth {
                                         view = AnyView(view.frame(maxWidth: .infinity))
                                     }
@@ -298,21 +299,11 @@ struct Customizer: View {
                         Toggle("Colored border", isOn: $cardShowCustomBorder)
                             .font(.caption)
 
-                        Card(customStyle: { card in
-                            AnyView(
-                                card
-                                    .cornerRadius(cardCorner)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: cardCorner)
-                                            .strokeBorder(
-                                                cardShowCustomBorder
-                                                    ? currentTheme.light.primary
-                                                    : currentTheme.light.border,
-                                                lineWidth: cardBorderWidth
-                                            )
-                                    )
-                            )
-                        }) {
+                        Card(
+                            cornerRadius: cardCorner,
+                            borderWidth: cardBorderWidth,
+                            borderColor: cardShowCustomBorder ? currentTheme.light.primary : nil
+                        ) {
                             CardHeader {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {

@@ -4,36 +4,49 @@ import SwiftUI
 
 /// The root card container. Corresponds to `<Card>` in shadcn/ui.
 ///
-/// Supports custom styling via `customStyle` — mirrors shadcn/ui's `className` prop.
-/// Custom modifiers are applied **after** defaults, so user styles naturally override.
+/// Supports first-class customization (`cornerRadius`, `borderWidth`, `borderColor`)
+/// that **override internal defaults** (vs `customStyle` which wraps from outside).
 public struct Card<Content: View>: View {
     @Environment(\.shadcnToken) private var token
 
     let size: CardSize
-    let content: () -> Content
+    let cornerRadius: CGFloat?
+    let borderWidth: CGFloat?
+    let borderColor: Color?
     let customStyle: ((AnyView) -> AnyView)?
+    let content: () -> Content
 
     public init(
         size: CardSize = .default,
+        cornerRadius: CGFloat? = nil,
+        borderWidth: CGFloat? = nil,
+        borderColor: Color? = nil,
         customStyle: ((AnyView) -> AnyView)? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.size = size
-        self.content = content
+        self.cornerRadius = cornerRadius
+        self.borderWidth = borderWidth
+        self.borderColor = borderColor
         self.customStyle = customStyle
+        self.content = content
     }
 
     public var body: some View {
+        let radius = cornerRadius ?? (token.radius * 1.5)
+        let bWidth = borderWidth ?? 1
+        let bColor = borderColor ?? token.border
+
         let base = AnyView(
             VStack(alignment: .leading, spacing: 0) {
                 content()
             }
             .background(token.card)
             .foregroundColor(token.cardForeground)
-            .clipShape(RoundedRectangle(cornerRadius: token.radius * 1.5))
+            .clipShape(RoundedRectangle(cornerRadius: radius))
             .overlay(
-                RoundedRectangle(cornerRadius: token.radius * 1.5)
-                    .strokeBorder(token.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(bColor, lineWidth: bWidth)
             )
         )
 

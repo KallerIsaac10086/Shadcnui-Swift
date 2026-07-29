@@ -3,15 +3,6 @@ import SwiftUI
 // MARK: - Select
 
 /// A custom dropdown select. Corresponds to `<Select>` in shadcn/ui.
-///
-/// Usage:
-/// ```swift
-/// @State var selection = "light"
-/// Select(placeholder: "Theme", selection: $selection) {
-///     SelectItem("Light", value: "light")
-///     SelectItem("Dark", value: "dark")
-/// }
-/// ```
 public struct Select<Value: Hashable & Sendable, Content: View>: View {
     @Environment(\.shadcnToken) private var token
 
@@ -19,6 +10,7 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
     @Binding var selection: Value
     @ViewBuilder let content: () -> Content
     @State private var isOpen = false
+    @State private var triggerFrame: CGRect = .zero
 
     public init(
         placeholder: String = "",
@@ -32,7 +24,7 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            Button { withAnimation(.easeInOut(duration: 0.15)) { isOpen.toggle() } } label: {
+            Button { isOpen = true } label: {
                 HStack {
                     Text("\(String(describing: selection))")
                         .font(.system(size: 14))
@@ -41,36 +33,53 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(token.mutedForeground)
-                        .rotationEffect(.degrees(isOpen ? 180 : 0))
-                        .animation(.easeInOut(duration: 0.15), value: isOpen)
                 }
                 .frame(height: 36)
                 .padding(.horizontal, 12)
                 .background(token.card)
                 .clipShape(RoundedRectangle(cornerRadius: token.radius))
-                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(isOpen ? token.ring : token.border, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
+            .background(
+                GeometryReader { geo in
+                    Color.clear.onAppear { triggerFrame = geo.frame(in: .global) }
+                }
+            )
+        }
+        .environment(\.selectBinding, SelectBinding { value in
+            selection = value as! Value
+            isOpen = false
+        })
+        .environment(\.selectCurrentValue, selection)
+        .fullScreenCover(isPresented: $isOpen) {
+            ZStack(alignment: .top) {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture { isOpen = false }
 
-            if isOpen {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         content()
                     }
                 }
-                .frame(maxHeight: 200)
+                .frame(maxHeight: 240)
                 .padding(.vertical, 4)
                 .background(token.popover)
                 .clipShape(RoundedRectangle(cornerRadius: token.radius))
-                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
-                .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: token.radius)
+                        .strokeBorder(token.border, lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+                .padding(.horizontal, 16)
+                .padding(.top, triggerFrame.maxY + 4)
                 .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
-                .onTapGesture { withAnimation(.easeInOut(duration: 0.15)) { isOpen = false } }
             }
+            .animation(.easeInOut(duration: 0.15), value: isOpen)
+            .presentationBackground(.clear)
         }
-        .environment(\.selectBinding, SelectBinding { selection = $0 as! Value; withAnimation(.easeInOut(duration: 0.15)) { isOpen = false } })
-        .environment(\.selectCurrentValue, selection)
     }
 }
 

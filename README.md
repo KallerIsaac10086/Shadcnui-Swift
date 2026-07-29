@@ -1,187 +1,245 @@
-# shadcn-swift
+# ShadcnSwiftUI
 
-将 [shadcn/ui](https://github.com/shadcn-ui/ui) 设计系统移植到 Apple 平台 (iOS / macOS)，使用 SwiftUI 实现。
+将 [shadcn/ui](https://ui.shadcn.com) 设计系统移植到 Apple 平台（iOS 18+ / macOS 15+），使用 SwiftUI 原生实现。
 
-> **当前进度** — 已移植 **15 个组件**，覆盖基础表单、反馈、数据展示等常见场景。主题系统（8 套内置主题 + OKLCH 色彩空间）和自定义样式 API（first-class 参数 + customStyle 闭包）已就绪。
+源码可见、可复制、可定制 — 你拥有每一行代码。
 
-## 设计理念
+## 安装
 
-shadcn/ui 的核心价值不是"黑盒组件库"，而是：
+### Swift Package Manager
 
-| 核心理念 | Web (shadcn/ui) | Swift (shadcn-swift) |
-|---|---|---|
-| 源码可见可改 | 复制 `.tsx` 到项目 | 复制 `.swift` 到项目 |
-| 主题系统 | CSS 变量 (oklch) | `DesignToken` + `Environment` |
-| 变体模式 | `cva` + tailwind | `enum` + computed properties |
-| 自定义样式 | `className` prop + `cn()` | `cornerRadius`/`borderWidth` 等 first-class 参数 + `customStyle` 闭包 |
-| Light / Dark | CSS `:root` / `.dark` | `@Environment(\.colorScheme)` 自动切换 |
+```swift
+// Package.swift
+dependencies: [
+    .package(url: "https://github.com/KallerIsaac10086/Shadcnui-Swift.git", from: "1.0.0")
+]
+```
+
+或 Xcode: `File → Add Package Dependencies → 粘贴 URL`
+
+### 手动复制
+
+每个组件都是独立的 `.swift` 文件，直接复制 `shadcn-swift/Sources/ShadcnSwiftUI/Components/` 下的文件到你的项目即可。
 
 ## 快速开始
 
 ```swift
-// 1. 引入
 import ShadcnSwiftUI
 
-// 2. 设置主题
-ContentView()
-    .shadcnTheme(Themes.blue)
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .shadcnTheme(Themes.blue)
+        }
+    }
+}
 
-// 3. 使用组件 — Button
+// 使用组件
 Button("Click") { }
     .shadcnButton(variant: .outline, size: .sm)
 
-Button("Pill") { }
-    .shadcnButton(variant: .default, cornerRadius: 999)
-
-// Card
 Card {
     CardHeader {
         CardTitle("Title")
         CardDescription("Description")
     }
     CardContent { Text("Content") }
-    CardFooter {
-        Button("Action") { }.shadcnButton(size: .sm)
-    }
 }
 
-// Badge
-Badge(variant: .destructive) { Text("Deleted") }
-
-// Input + Label
+// 表单
 ShadcnLabel("Email", required: true)
-Input("Enter email", text: $email)
+Input("Enter email", text: $email, type: .email)
 
-// Switch / Checkbox / RadioGroup
-Toggle("", isOn: $enabled).toggleStyle(.shadcnSwitch)
-Checkbox(isChecked: $checked)
-RadioGroup(selection: $selected) {
-    RadioItem("Option A", value: "a")
-    RadioItem("Option B", value: "b")
-}
-
-// Progress / Skeleton
-Progress(value: 0.6)
-Skeleton().frame(width: 200, height: 16)
-
-// Alert / Avatar / Separator / Toggle / Textarea
-Alert(variant: .destructive) {
-    AlertTitle("Error")
-    AlertDescription("Something went wrong.")
-}
-Avatar(size: .lg) { AvatarFallback(initials: "JD") }
-Separator()
-ShadcnToggle(isPressed: $bold) { Image(systemName: "bold") }
-Textarea("Write something…", text: $text, minHeight: 80)
+// 弹窗
+Button("Open") { showDialog = true }
+    .dialog(isPresented: $showDialog) {
+        DialogContent {
+            DialogHeader {
+                DialogTitle("Edit Profile")
+                DialogDescription("Make changes here.")
+            }
+            DialogFooter {
+                Button("Cancel") { showDialog = false }.shadcnButton(variant: .outline)
+                Button("Save") { showDialog = false }.shadcnButton()
+            }
+        }
+    }
 ```
 
-## 组件清单
+## 组件清单（56 个）
 
-| 组件 | 状态 | Variants / 子组件 | 自定义参数 |
-|---|---|---|---|
-| Button | ✅ | 6 variants, 8 sizes | `cornerRadius`, `customStyle` |
-| Card | ✅ | 7 个子组件 (Header/Title/Description/Action/Content/Footer) | `cornerRadius`, `borderWidth`, `borderColor`, `customStyle` |
-| Badge | ✅ | 6 variants (default/secondary/destructive/outline/ghost/link) | `customStyle` |
-| Input | ✅ | — | `isInvalid` |
-| Textarea | ✅ | — | `minHeight` |
-| Label | ✅ | — | `required` |
-| Switch | ✅ | 2 sizes (default/sm), ToggleStyle | — |
-| Checkbox | ✅ | 16×16, checkmark icon | — |
-| RadioGroup | ✅ | RadioGroup + RadioItem | — |
-| Progress | ✅ | determinate / indeterminate | `height` |
-| Skeleton | ✅ | 脉冲动画 | — |
-| Separator | ✅ | horizontal / vertical | `decorative` |
-| Alert | ✅ | default / destructive, 4 个子组件 (Title/Description/Action) | — |
-| Avatar | ✅ | 3 sizes, 6 个子组件 (Image/Fallback/Badge/Group/GroupCount) | — |
-| Toggle | ✅ | 2 variants (default/outline), 3 sizes | — |
+### 基础
 
-## 内置主题
+| 组件 | 说明 |
+|---|---|
+| Button | 6 variants, 8 sizes, `cornerRadius` + `customStyle` |
+| ButtonGroup | 多按钮水平/垂直排列 |
+| Card | 7 个子组件, `cornerRadius`/`borderWidth`/`borderColor` |
+| Badge | 6 variants (default/secondary/destructive/outline/ghost/link) |
+| Avatar | 3 sizes, 6 个子组件 (Image/Fallback/Badge/Group/GroupCount) |
+| Separator | 水平/垂直分割线 |
+| Typography | h1~h4, p, lead, muted, code, blockquote 预设 |
+
+### 表单
+
+| 组件 | 说明 |
+|---|---|
+| Input | 6 种 type (text/password/email/number/url/search), focus ring, invalid 态 |
+| Textarea | 多行输入 + placeholder |
+| Label | 表单标签, `required` 标识 |
+| Switch | ToggleStyle, 2 sizes |
+| Checkbox | checked/indeterminate 半选态 |
+| RadioGroup | RadioGroup + RadioItem |
+| Slider | 拖拽滑块, range/step |
+| Toggle | 2 variants, 3 sizes |
+| ToggleGroup | 多 Toggle 按钮组 |
+| Select | 自定义下拉, Environment 自动选中 |
+| NativeSelect | SwiftUI Menu 封装 |
+| Combobox | 搜索 + 下拉过滤 |
+| InputOTP | 验证码输入, paste 支持 |
+| Field | Label + Input + Description + Error |
+| InputGroup | Input 前缀/后缀 addon |
+
+### 反馈
+
+| 组件 | 说明 |
+|---|---|
+| Alert | default/destructive, Title/Description/Action |
+| AlertDialog | 模态确认对话框 |
+| Progress | determinate/indeterminate, color/label |
+| Skeleton | 脉冲动画 |
+| Spinner | 加载旋转器 |
+| Toast | 4 种类型 (success/info/warning/error) |
+
+### 浮层
+
+| 组件 | 说明 |
+|---|---|
+| Dialog | 模态对话框, 5 种 size, `fullScreenCover` |
+| Sheet | 四方向滑入面板 (top/bottom/leading/trailing) |
+| Drawer | 底部抽屉, snap points, 拖拽关闭 |
+| Tooltip | hover/long-press 提示, 3 sizes |
+| Popover | 弹出卡片 + Title/Description |
+| HoverCard | 悬停详情卡片 |
+
+### 导航
+
+| 组件 | 说明 |
+|---|---|
+| Tabs | default (pill) + line (underline) 两种 variant |
+| Breadcrumb | Link/Page/Separator/Ellipsis |
+| Pagination | Previous/Next/Link/Ellipsis |
+| NavigationMenu | 水平导航栏 |
+| Menubar | 桌面菜单栏 (File/Edit/...) |
+
+### 数据展示
+
+| 组件 | 说明 |
+|---|---|
+| Table | Header/Body/Footer/Row/Head/Cell |
+| Accordion | single/multiple 展开模式 |
+| Collapsible | 折叠面板 |
+| Carousel | 滑动轮播 |
+| Item | 列表行 (Media/Content/Title/Description/Actions) |
+| Empty | 空状态 (Media/Title/Description/Content) |
+| AspectRatio | 宽高比容器 |
+| ScrollArea | 可滚动区域 |
+
+### 菜单
+
+| 组件 | 说明 |
+|---|---|
+| DropdownMenu | Item/Label/Separator/Shortcut/CheckboxItem |
+| ContextMenu | 右键/长按菜单 |
+| Command | ⌘K 命令面板 (Input/List/Group/Item/Empty) |
+
+### 聊天
+
+| 组件 | 说明 |
+|---|---|
+| Bubble | 聊天气泡, start/end 对齐 |
+| Message | 消息行 (Avatar/Header/Content/Footer) |
+| MessageScroller | 自动滚动消息列表 |
+| Attachment | 文件附件 pill |
+| Marker | 对话标记/分隔符 |
+
+### 其他
+
+| 组件 | 说明 |
+|---|---|
+| Kbd | 键盘按键 + KbdGroup |
+| Direction | RTL/LTR 方向控制 |
+| Resizable | 可拖拽面板组 |
+| DatePicker | 日历选择器 |
+
+## 主题系统
+
+14 套内置主题，OKLCH 色彩空间，Light/Dark 自动切换：
 
 ```swift
-Themes.zinc      // 锌灰（默认）
-Themes.neutral   // 中性灰
-Themes.stone     // 石灰
-Themes.rose      // 玫红
-Themes.orange    // 橙色
-Themes.green     // 绿色
-Themes.blue      // 蓝色
-Themes.violet    // 紫罗兰
+// 内置主题
+Themes.zinc       // 锌灰（默认）
+Themes.neutral    // 中性灰
+Themes.stone      // 石灰
+Themes.red        // 红色
+Themes.rose       // 玫红
+Themes.orange     // 橙色
+Themes.yellow     // 黄色
+Themes.green      // 绿色
+Themes.teal       // 青色
+Themes.blue       // 蓝色
+Themes.indigo     // 靛蓝
+Themes.violet     // 紫罗兰
+Themes.purple     // 紫色
+Themes.pink       // 粉色
+
+// 应用主题
+ContentView()
+    .shadcnTheme(Themes.blue)
 ```
 
-## 两种自定义方式
+## 自定义样式
 
-### First-class 参数（推荐常用样式）
-
-直接传入 init，**替换**内部默认值，无副作用：
+两种方式互补：
 
 ```swift
+// 1. First-class 参数 — 替换内部默认值
+Button("Pill") { }.shadcnButton(cornerRadius: 999)
 Card(cornerRadius: 24, borderWidth: 2, borderColor: .blue) { ... }
-Button("Btn") { }.shadcnButton(cornerRadius: 999)
-```
 
-### customStyle 闭包（高级扩展）
-
-在最外层追加 modifier，用于特效等：
-
-```swift
-.shadcnButton(variant: .default) { label in
-    AnyView(label.shadow(radius: 8))
-}
+// 2. customStyle 闭包 — 追加 modifier
+Button("Glow") { }
+    .shadcnButton(variant: .default) { label in
+        AnyView(label.shadow(color: .blue.opacity(0.5), radius: 8, y: 4))
+    }
 ```
 
 ## 目录结构
 
 ```
-shadcn-swift/
-├── Package.swift
-├── Sources/ShadcnSwiftUI/
-│   ├── Theme/              # 主题系统
-│   │   ├── DesignToken.swift
-│   │   ├── Theme.swift
-│   │   ├── Themes.swift
-│   │   └── ThemeEnvironment.swift
-│   ├── Utils/
-│   │   └── Color+OKLCH.swift   # OKLCH 色彩解析
-│   └── Components/
-│       ├── Alert/Alert.swift
-│       ├── Avatar/Avatar.swift
-│       ├── Badge/Badge.swift
-│       ├── Button/Button.swift
-│       ├── Card/Card.swift
-│       ├── Checkbox/Checkbox.swift
-│       ├── Input/Input.swift
-│       ├── Label/Label.swift
-│       ├── Progress/Progress.swift
-│       ├── RadioGroup/RadioGroup.swift
-│       ├── Separator/Separator.swift
-│       ├── Skeleton/Skeleton.swift
-│       ├── Switch/Switch.swift
-│       ├── Textarea/Textarea.swift
-│       └── Toggle/Toggle.swift
-├── docs/
-│   ├── design-tokens.md
-│   ├── migration-guide.md
-│   ├── custom-style.md
-│   ├── component-template.swift
-│   ├── p0-components-plan.md
-│   └── p1-p2-p3-components.md
-└── ShadcnSwift/            # Demo App (Xcode)
-    └── ContentView.swift
+├── Package.swift              # SPM 清单（根目录）
+├── shadcn-swift/
+│   ├── Sources/ShadcnSwiftUI/
+│   │   ├── Theme/             # DesignToken + Theme + Themes + Environment
+│   │   ├── Utils/             # Color+OKLCH
+│   │   └── Components/        # 56 个组件
+│   └── Tests/
+├── ShadcnSwift/               # Demo App (Xcode)
+│   └── ShadcnSwift/
+│       └── ContentView.swift  # 全组件交互式预览
+├── docs/                      # 设计文档 + 迁移计划
+├── LICENSE                    # Apache 2.0
+└── README.md
 ```
-
-## 文档
-
-| 文档 | 内容 |
-|---|---|
-| [design-tokens.md](shadcn-swift/docs/design-tokens.md) | CSS 变量 → DesignToken 映射表 |
-| [migration-guide.md](shadcn-swift/docs/migration-guide.md) | 组件迁移 8 步 SOP |
-| [custom-style.md](shadcn-swift/docs/custom-style.md) | 自定义样式 API 指南 |
-| [component-template.swift](shadcn-swift/docs/component-template.swift) | 组件源码模板（复制即用） |
-| [p0-components-plan.md](shadcn-swift/docs/p0-components-plan.md) | P0 组件（Badge/Input/Switch/Separator/Avatar）移植规格 |
-| [p1-p2-p3-components.md](shadcn-swift/docs/p1-p2-p3-components.md) | P1/P2/P3 待移植组件清单 |
 
 ## 平台要求
 
-- iOS 18+
-- macOS 15+
-- Swift 6
+- iOS 18+ / macOS 15+
+- Swift 6.0
+- Xcode 16+
+
+## License
+
+[Apache License 2.0](LICENSE)

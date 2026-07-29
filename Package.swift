@@ -12,7 +12,7 @@ let package = Package(
         .library(name: "ShadcnSwiftUI", targets: ["ShadcnSwiftUI"]),
     ],
     targets: [
-        .target(name: "ShadcnSwiftUI", path: "Sources/ShadcnSwiftUI"),
-        .testTarget(name: "ShadcnSwiftUITests", dependencies: ["ShadcnSwiftUI"], path: "Tests/ShadcnSwiftUITests"),
+        .target(name: "ShadcnSwiftUI", path: "shadcn-swift/Sources/ShadcnSwiftUI"),
+        .testTarget(name: "ShadcnSwiftUITests", dependencies: ["ShadcnSwiftUI"], path: "shadcn-swift/Tests/ShadcnSwiftUITests"),
     ]
 )

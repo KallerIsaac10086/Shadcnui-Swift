@@ -111,21 +111,21 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                         Button(buttonLabel) { }
                             .shadcnButton(variant: customVariant, size: .default) { label in
-                                var view = label
+                                var view: AnyView = label
                                 if cornerRadius > 0 {
-                                    view = view.cornerRadius(cornerRadius)
+                                    view = AnyView(view.cornerRadius(cornerRadius))
                                 }
                                 if isFullWidth {
-                                    view = view.frame(maxWidth: .infinity)
+                                    view = AnyView(view.frame(maxWidth: .infinity))
                                 }
                                 if shadowRadius > 0 {
-                                    view = view.shadow(
+                                    view = AnyView(view.shadow(
                                         color: currentTheme.light.primary.opacity(0.35),
                                         radius: shadowRadius,
                                         y: shadowRadius / 2
-                                    )
+                                    ))
                                 }
-                                return AnyView(view)
+                                return view
                             }
                     }
                 }

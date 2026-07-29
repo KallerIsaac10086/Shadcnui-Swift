@@ -1,17 +1,19 @@
 # shadcn/ui → Apple 平台移植计划
 
-## 一、背景与目标
+> 阶段一（POC）已完成。阶段二（P0+P1 表单组件）已完成。当前推进阶段二剩余项。
 
-shadcn/ui 是一个 "源码可见、可复制、可定制" 的 React 组件库，其核心价值不在于封装好的黑盒组件，而在于：
+## 当前状态
 
-1. **设计 Token 系统** — 基于 CSS 变量（oklch 色彩空间）的语义化主题，支持 light/dark 双模式
-2. **Variant 模式** — 通过 `cva` (class-variance-authority) 定义组件的形态变体
-3. **源码即组件** — 组件代码直接拷贝到用户项目，用户拥有完全的修改权
-4. **`cn()` 合并工具** — 解决样式冲突、支持条件类名合并
+| 阶段 | 状态 | 内容 |
+|---|---|---|
+| Step 1-7 (POC) | ✅ 已完成 | Button + Card + OKLCH + Theme + Demo App |
+| P0 表单组件 | ✅ 已完成 | Badge, Input, Switch, Separator, Avatar |
+| P1 表单与反馈 | ✅ 已完成 | Alert, Textarea, Label, Checkbox, RadioGroup, Progress, Skeleton, Toggle |
+| P1 剩余 | 🔲 待移植 | Slider, Collapsible, NativeSelect, Direction, Kbd |
+| P2 浮层与导航 | 🔲 待移植 | Dialog, Sheet, Tooltip, Popover, HoverCard, AlertDialog, Tabs, Breadcrumb |
+| P3 复杂控件 | 🔲 待移植 | DropdownMenu, Select, Combobox, Command, Calendar, Chart, Table 等 |
 
-本次目标：**将上述设计理念移植到 Apple 平台（iOS / macOS）**，用 SwiftUI 重新实现一套同等自由的组件库，命名为 **`shadcn-swift`**。
-
-> 阶段一（本计划范围）：**先移植 2 个控件作为 POC 验证**，跑通设计 token → 主题 → 组件 → 示例 App 的完整链路。
+已移植 **15/63** 组件（23.8%）。
 
 ---
 
@@ -58,39 +60,49 @@ shadcn/ui 是一个 "源码可见、可复制、可定制" 的 React 组件库�
 
 ## 四、架构设计
 
-### 4.1 目录结构
+### 4.1 目录结构（实际）
 
 ```
 shadcn-swift/
-├── Package.swift                    # Swift Package Manager 描述
+├── Package.swift
 ├── Sources/
-│   └── ShadcnSwift/
+│   └── ShadcnSwiftUI/
 │       ├── Theme/
-│       │   ├── DesignToken.swift       # 设计 token 定义（语义化颜色/圆角/间距）
-│       │   ├── Theme.swift             # 主题容器（light/dark/base color）
-│       │   ├── Themes.swift            # 内置主题（neutral/zinc/stone 等）
-│       │   └── ThemeEnvironment.swift  # SwiftUI EnvironmentKey 注入
+│       │   ├── DesignToken.swift
+│       │   ├── Theme.swift
+│       │   ├── Themes.swift
+│       │   └── ThemeEnvironment.swift
 │       ├── Utils/
-│       │   └── Color+OKLCH.swift       # oklch 色彩解析与 Color 扩展
+│       │   └── Color+OKLCH.swift
 │       └── Components/
-│           ├── Button/
-│           │   ├── Button.swift            # Button 控件 + variant enum
-│           │   ├── ButtonStyle.swift        # SwiftUI ButtonStyle 实现
-│           │   └── ButtonVariants.swift    # 样式映射表
-│           └── Card/
-│               ├── Card.swift              # Card 容器
-│               ├── CardHeader.swift
-│               ├── CardTitle.swift
-│               ├── CardDescription.swift
-│               ├── CardAction.swift
-│               ├── CardContent.swift
-│               └── CardFooter.swift
-├── Examples/
-│   └── ShadcnDemo/                 # iOS Demo App
-│       └── ShadcnDemoApp.swift
-└── docs/
-    ├── design-tokens.md             # 设计 token 对照表
-    └── migration-guide.md           # Web → Swift 迁移对照
+│           ├── Alert/Alert.swift
+│           ├── Avatar/Avatar.swift
+│           ├── Badge/Badge.swift
+│           ├── Button/Button.swift
+│           ├── Card/Card.swift
+│           ├── Checkbox/Checkbox.swift
+│           ├── Input/Input.swift
+│           ├── Label/Label.swift
+│           ├── Progress/Progress.swift
+│           ├── RadioGroup/RadioGroup.swift
+│           ├── Separator/Separator.swift
+│           ├── Skeleton/Skeleton.swift
+│           ├── Switch/Switch.swift
+│           ├── Textarea/Textarea.swift
+│           └── Toggle/Toggle.swift
+├── Tests/
+│   └── ShadcnSwiftUITests/
+├── docs/
+│   ├── design-tokens.md
+│   ├── migration-guide.md
+│   ├── custom-style.md
+│   ├── component-template.swift
+│   ├── p0-components-plan.md
+│   └── p1-p2-p3-components.md
+└── ShadcnSwift/            # Demo App (Xcode)
+    └── ShadcnSwift/
+        ├── ContentView.swift
+        └── ShadcnSwiftApp.swift
 ```
 
 ### 4.2 设计 Token 映射
@@ -150,89 +162,117 @@ struct ThemeEnvironmentKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    var token: DesignToken {
+    var shadcnToken: DesignToken {
         get { self[ThemeEnvironmentKey.self] }
         set { self[ThemeEnvironmentKey.self] = newValue }
     }
 }
+
+// 组件内使用：
+// @Environment(\.shadcnToken) private var token
 ```
 
 ### 4.4 Variant 模式映射
 
-shadcn/ui 用 `cva` 定义 variant，Swift 用 **enum + ViewModifier**：
+shadcn/ui 用 `cva` 定义 variant，Swift 用 **enum + ButtonStyle 内的 switch/case**：
 
 ```swift
-// Variant 定义（对应 cva 的 variants 字段）
-enum ButtonVariant: String, CaseIterable {
+// Variant 定义
+public enum ButtonVariant: String, CaseIterable, Sendable {
     case `default`, outline, secondary, ghost, destructive, link
 }
 
-enum ButtonSize: String, CaseIterable {
-    case `default`, xs, sm, lg, icon, iconXs = "icon-xs", iconSm = "icon-sm", iconLg = "icon-lg"
-}
+// ButtonStyle 内部样式分发（switch/case）
+public struct ShadcnButtonStyle: ButtonStyle {
+    @Environment(\.shadcnToken) private var token
 
-// 样式映射（对应 cva 的 variant → class 字符串）
-extension ButtonVariant {
-    @ViewBuilder
-    func body(content: some View, token: DesignToken, size: ButtonSize) -> some View {
-        // 应用背景、前景、边框、圆角等
+    private func backgroundColor(isPressed: Bool) -> Color {
+        switch variant {
+        case .default:     return isPressed ? token.primary.opacity(0.8) : token.primary
+        case .outline, .ghost, .link: return .clear
+        case .secondary:   return token.secondary
+        case .destructive: return token.destructive
+        }
     }
 }
+
+// 使用
+Button("Click") { }
+    .shadcnButton(variant: .outline, size: .sm)
 ```
+
+### 4.5 自定义样式 API
+
+两种方式共存，互补：
+
+1. **First-class 参数** — init 参数直接替换内部默认值
+   ```swift
+   Card(cornerRadius: 24, borderWidth: 2, borderColor: .blue) { ... }
+   Button("Pill") { }.shadcnButton(cornerRadius: 999)
+   ```
+2. **customStyle 闭包** — 在最外层追加 modifier
+   ```swift
+   .shadcnButton(variant: .default) { label in
+       AnyView(label.shadow(color: .blue.opacity(0.5), radius: 8))
+   }
+   ```
 
 ---
 
 ## 五、实施步骤
 
-### Step 1：项目脚手架（0.5 天）
+### Step 1：项目脚手架（0.5 天）✅
 
-- [ ] 初始化 `shadcn-swift/` 目录与 `Package.swift`
-- [ ] 配置 Swift Package（iOS 17+ / macOS 14+ deployment target）
-- [ ] 创建 Demo App 工程（`Examples/ShadcnDemo`）
+- [x] 初始化 `shadcn-swift/` 目录与 `Package.swift`
+- [x] 配置 Swift Package（iOS 18+ / macOS 15+ deployment target）
+- [x] 创建 Demo App 工程（`ShadcnSwift/`）
 
-### Step 2：色彩工具层（0.5 天）
+### Step 2：色彩工具层（0.5 天）✅
 
-- [ ] 实现 `Color+OKLCH.swift`：解析 `"oklch(0.205 0 0)"` 字符串为 SwiftUI `Color`
+- [x] 实现 `Color+OKLCH.swift`：解析 `"oklch(0.205 0 0)"` 字符串为 SwiftUI `Color`
   - iOS 18+ 优先使用原生 `Color(oklch:)`
-  - iOS 17 回退：oklch → linear sRGB → `Color(red:green:blue:)`
+  - 回退：oklch → linear sRGB → `Color(red:green:blue:)`
 - [ ] 单元测试：验证所有 `themes.ts` 中的颜色值能正确解析
 
-### Step 3：设计 Token 与主题系统（1 天）
+### Step 3：设计 Token 与主题系统（1 天）✅
 
-- [ ] 定义 `DesignToken` struct（含所有语义 token）
-- [ ] 实现 `Theme` struct 与 `Themes` 内置主题
-- [ ] 移植 `themes.ts` 中的 7 个 base color（neutral/stone/zinc/mauve/olive/mist/taupe）+ 16 个 accent color
-- [ ] 实现 `ThemeEnvironmentKey`，支持 `.light` / `.dark` 自动切换（`@Environment(\.colorScheme)`）
+- [x] 定义 `DesignToken` struct（含所有语义 token）
+- [x] 实现 `Theme` struct 与 `Themes` 内置主题
+- [x] 移植 `themes.ts` 中的 neutral/stone/zinc + rose/orange/green/blue/violet（8 个主题）
+- [ ] 补充剩余 base color（mauve/olive/mist/taupe）+ 其余 11 个 accent color
+- [x] 实现 `ThemeEnvironmentKey`，支持 `.light` / `.dark` 自动切换（`@Environment(\.colorScheme)`）
 - [ ] Demo：一个纯色块预览页，展示所有 token
 
-### Step 4：Button 控件移植（1 天）
+### Step 4：Button 控件移植（1 天）✅
 
-- [ ] 定义 `ButtonVariant` / `ButtonSize` enum
-- [ ] 实现 `ShadcnButtonStyle: ButtonStyle`（对应 `buttonVariants` 的 cva 配置）
-- [ ] 实现 `Button` View（支持 `asChild` 多态 → 用 `ButtonStyle` + label ViewBuilder 实现）
-- [ ] 映射 6 种 variant 样式（default/outline/secondary/ghost/destructive/link）
-- [ ] 映射 8 种 size（含 icon 系列）
-- [ ] Demo：展示所有 variant × size 组合矩阵
+- [x] 定义 `ButtonVariant` / `ButtonSize` enum
+- [x] 实现 `ShadcnButtonStyle: ButtonStyle`
+- [x] 实现 `ShadcnButton` View + `.shadcnButton()` modifier
+- [x] 映射 6 种 variant 样式（default/outline/secondary/ghost/destructive/link）
+- [x] 映射 8 种 size（含 icon 系列）
+- [x] Demo：展示所有 variant × size 组合矩阵
 
-### Step 5：Card 控件移植（1 天）
+### Step 5：Card 控件移植（1 天）✅
 
-- [ ] 实现 `Card` 容器 View（VStack + 背景色 + 圆角 + 边框）
-- [ ] 实现 `CardHeader` / `CardTitle` / `CardDescription` / `CardAction` / `CardContent` / `CardFooter`
-- [ ] 支持 `size: "default" | "sm"` 变体
-- [ ] Demo：展示 Card 的各种组合（带 Action / 不带 / 不同 size）
+- [x] 实现 `Card` 容器 View（VStack + 背景色 + 圆角 + 边框）
+- [x] 实现 `CardHeader` / `CardTitle` / `CardDescription` / `CardAction` / `CardContent` / `CardFooter`
+- [x] 支持 `size: default | sm` 变体
+- [x] Demo：展示 Card 的各种组合
 
-### Step 6：Demo App 集成与验收（0.5 天）
+### Step 6：Demo App 集成与验收（0.5 天）✅
 
-- [ ] Demo App 首页：展示 Button + Card 的完整示例
-- [ ] 支持运行时切换主题（neutral ↔ zinc ↔ rose 等）
-- [ ] 支持运行时切换 light/dark 模式
-- [ ] 截图对比：与 shadcn/ui 官网示例做视觉一致性验证
+- [x] Demo App 首页：展示全部 15 组件的完整示例
+- [x] 支持运行时切换主题（zinc/rose/orange/green/blue/violet）
+- [x] 支持运行时切换 light/dark 模式（跟随系统）
+- [x] 支持 Button + Card Customizer（实时调参 + preset 分享）
 
-### Step 7：文档与模板（0.5 天）
+### Step 7：文档与模板（0.5 天）✅
 
-- [ ] 编写 `design-tokens.md`（Web → Swift token 对照表）
-- [ ] 编写 `migration-guide.md`（组件迁移 SOP）
-- [ ] 提供组件 `.swift` 源码模板（模拟 shadcn CLI 的 "复制源码" 体验）
+- [x] 编写 `design-tokens.md`（Web → Swift token 对照表）
+- [x] 编写 `migration-guide.md`（组件迁移 SOP）
+- [x] 提供组件 `.swift` 源码模板（`component-template.swift`）
+- [x] 编写 `p0-components-plan.md`（P0 组件详细规格）
+- [x] 编写 `p1-p2-p3-components.md`（P1/P2/P3 待移植清单）
 
 ---
 
@@ -263,18 +303,20 @@ extension ButtonVariant {
 
 ---
 
-## 八、后续路线（阶段二+，本次不实施）
+## 八、后续路线
 
-POC 验证通过后，按以下优先级逐步扩展：
+### 已完成 ✅
+1. **P0 表单类**：Badge / Input / Switch / Separator / Avatar
+2. **P1 反馈类**：Alert / Textarea / Label / Checkbox / RadioGroup / Progress / Skeleton / Toggle
 
-1. **P0 表单类**：Input / Textarea / Label / Switch / Checkbox
-2. **P1 叠层类**：Dialog / Sheet / Popover / Tooltip（需映射到 SwiftUI 的 `.sheet` / `.popover` / `.overlay`）
-3. **P1 导航类**：Tabs / NavigationMenu / Breadcrumb / Pagination
-4. **P2 数据展示**：Table / Badge / Avatar / Separator
-5. **P2 反馈类**：Toast (Sonner) / Progress / Skeleton / Alert
-6. **P3 复杂控件**：Select / Combobox / Command / Calendar / Chart
-7. **CLI 工具**：实现 `shadcn-swift add <component>` 命令行，从 registry 下载 `.swift` 源码到用户项目
-8. **Figma 同步**：设计 token 导出为 Figma Variables
+### 待移植 🔲
+3. **P1 剩余**：Slider / Collapsible / NativeSelect / Direction / Kbd
+4. **P2 浮层类**：Dialog / Sheet / AlertDialog / Popover / Tooltip / HoverCard
+5. **P2 导航类**：Tabs / Breadcrumb / Pagination / NavigationMenu
+6. **P3 复杂控件**：DropdownMenu / Select / Combobox / Command / Calendar / Chart / Table / DataTable / Carousel / Sidebar / Drawer 等
+7. **P3 新增组件**：Bubble / Message / MessageScroller / Attachment / Marker / Toast / Spinner 等
+8. **CLI 工具**：实现 `shadcn-swift add <component>` 命令行
+9. **Figma 同步**：设计 token 导出为 Figma Variables
 
 ---
 

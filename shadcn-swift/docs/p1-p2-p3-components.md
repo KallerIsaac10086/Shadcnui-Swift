@@ -1,58 +1,39 @@
 # P1 / P2 / P3 组件清单
 
 > 基于 shadcn/ui 源码 (`apps/v4/registry/bases/radix/ui/`) 完整遍历。  
-> 已排除 P0 组件: Badge, Input, Switch, Separator, Avatar（详见 `p0-components-plan.md`）。
+> 已排除 P0 组件: Badge, Input, Switch, Separator, Avatar（详见 `p0-components-plan.md`）。  
+> ✅ = 已移植到 `Sources/ShadcnSwiftUI/Components/`。
 
 ---
 
-## 🟠 P1 — 表单与反馈（7~12 个组件，中低复杂度）
+## 🟠 P1 — 表单与反馈（13 个组件，中低复杂度）
 
-### Alert（提示横幅）
-- **73 行**，4 子组件：Alert / AlertTitle / AlertDescription / AlertAction
-- **2 variants**: default (primary 背景), destructive (red 背景)
-- **无 Radix 依赖**，纯 div + cva
-- Action 区域可嵌入 Button，链接自动 underline
-- 移植关键：VStack 容器 + HStack Action 区
+### Alert（提示横幅）✅ 已移植
+- `Components/Alert/Alert.swift` — 2 variants, 4 子组件
+- Alert / AlertTitle / AlertDescription / AlertAction
 
-### Textarea（多行输入）
-- **18 行**，1 组件
-- 简单 `<textarea>` wrapper，样式与 Input 一致
-- 移植关键：`TextEditor` 或 `TextField(axis: .vertical)`
+### Textarea（多行输入）✅ 已移植
+- `Components/Textarea/Textarea.swift` — TextEditor + placeholder overlay
 
-### Label（表单标签）
-- **24 行**，1 组件
-- Radix Label primitive 的 thin wrapper
-- `peer-disabled:cursor-not-allowed peer-disabled:opacity-50`
-- 移植关键：简单 `Text` + 关联 field accessibility
+### Label（表单标签）✅ 已移植
+- `Components/Label/Label.swift` — @Environment(\.isEnabled) 自动 disabled 联动
 
-### Checkbox（复选框）
-- **38 行**，1 组件
-- Radix Checkbox wrapper，带 check icon 指示器
-- 移植关键：`ToggleStyle` 或 `Button` + `@State isChecked`
+### Checkbox（复选框）✅ 已移植
+- `Components/Checkbox/Checkbox.swift` — 16×16, checkmark icon, @Binding isChecked
 
-### RadioGroup（单选组）
-- **44 行**，2 子组件：RadioGroup / RadioGroupItem
-- Circle indicator (inner 8px dot)
-- 移植关键：`PickerStyle.radioGroup` 或自定义 layout
+### RadioGroup（单选组）✅ 已移植
+- `Components/RadioGroup/RadioGroup.swift` — RadioGroup + RadioItem, circle dot indicator
 
-### Progress（进度条）
-- **31 行**，1 组件
-- Track + indicator，CSS `translateX(-X%)` 动画
-- 移植关键：`ProgressView` 或自定义 ZStack + `.frame(width:)` 动画
+### Progress（进度条）✅ 已移植
+- `Components/Progress/Progress.swift` — determinate + indeterminate pulse
 
-### Skeleton（骨架屏）
-- **13 行**，1 组件
-- 最简组件：`animate-pulse rounded-md bg-muted`
-- 移植关键：`.opacity(0~1 循环)` 或 `.phaseAnimator`
+### Skeleton（骨架屏）✅ 已移植
+- `Components/Skeleton/Skeleton.swift` — animate-pulse opacity
 
-### Toggle（切换按钮）
-- **46 行**，1 组件 + `toggleVariants`（可复用）
-- **2 variants**: default, outline
-- **3 sizes**: default, sm, lg
-- `aria-pressed` 状态切换
-- 移植关键：类似 Button 但用 `isPressed` 状态切换样式
+### Toggle（切换按钮）✅ 已移植
+- `Components/Toggle/Toggle.swift` — 2 variants (default/outline), 3 sizes
 
-### Slider（滑动条）
+### Slider（滑动条）🔲 待移植
 - **59 行**，1 组件
 - Track + Range + Thumb，支持多 thumb
 - 移植关键：`Slider` 原生控件，自定义 track/accent 颜色
@@ -194,4 +175,17 @@
 
 ## 总计
 
-shadcn/ui 共 **56 个组件**。已完成 2 个（Button, Card）+ P0 计划 5 个 = 进度 7/56。
+shadcn/ui v4 共 **63 个组件**。
+
+| 类别 | 数量 | 状态 |
+|---|---|---|
+| POC (Button, Card) | 2 | ✅ |
+| P0 (Badge, Input, Switch, Separator, Avatar) | 5 | ✅ |
+| P1 已移植 (Alert, Textarea, Label, Checkbox, RadioGroup, Progress, Skeleton, Toggle) | 8 | ✅ |
+| P1 待移植 (Slider, Collapsible, NativeSelect, Direction, Kbd) | 5 | 🔲 |
+| P2 待移植 | 8 | 🔲 |
+| P3 待移植 | 12 | 🔲 |
+| 新增 (v4) | 7 | 🔲 |
+| 其他 (Table/Carousel/Pagination/ScrollArea/Resizable/Typography 等) | 16 | 🔲 |
+
+已移植 **15/63**（23.8%），待移植 **48/63**。

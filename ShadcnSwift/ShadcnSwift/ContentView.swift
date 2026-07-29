@@ -23,6 +23,8 @@ struct ContentView: View {
 
     private var currentTheme: Theme {
         switch selectedTheme {
+        case "neutral": return Themes.neutral
+        case "stone":   return Themes.stone
         case "rose":    return Themes.rose
         case "orange":  return Themes.orange
         case "green":   return Themes.green
@@ -42,13 +44,15 @@ struct ThemePicker: View {
         VStack(spacing: 8) {
             Picker("Theme", selection: $selectedTheme) {
                 Text("Zinc").tag("zinc")
+                Text("Neutral").tag("neutral")
+                Text("Stone").tag("stone")
                 Text("Rose").tag("rose")
                 Text("Orange").tag("orange")
                 Text("Green").tag("green")
                 Text("Blue").tag("blue")
                 Text("Violet").tag("violet")
             }
-            .pickerStyle(.segmented)
+            .pickerStyle(.menu)
         }
     }
 }
@@ -359,6 +363,8 @@ struct Customizer: View {
 
     private var currentTheme: Theme {
         switch selectedTheme {
+        case "neutral": return Themes.neutral
+        case "stone":   return Themes.stone
         case "rose":    return Themes.rose
         case "orange":  return Themes.orange
         case "green":   return Themes.green
@@ -597,8 +603,8 @@ struct Customizer: View {
 
     // MARK: - Preset Encode / Decode
 
-    private let themeIndex: [String: UInt8] = ["zinc":0, "rose":1, "orange":2, "green":3, "blue":4, "violet":5]
-    private let themeFromIndex: [UInt8: String] = [0:"zinc", 1:"rose", 2:"orange", 3:"green", 4:"blue", 5:"violet"]
+    private let themeIndex: [String: UInt8] = ["zinc":0, "neutral":1, "stone":2, "rose":3, "orange":4, "green":5, "blue":6, "violet":7]
+    private let themeFromIndex: [UInt8: String] = [0:"zinc", 1:"neutral", 2:"stone", 3:"rose", 4:"orange", 5:"green", 6:"blue", 7:"violet"]
     private let variantIndex: [ButtonVariant: UInt8] = [.default:0, .outline:1, .secondary:2, .ghost:3, .destructive:4, .link:5]
     private let variantFromIndex: [UInt8: ButtonVariant] = [0:.default, 1:.outline, 2:.secondary, 3:.ghost, 4:.destructive, 5:.link]
 

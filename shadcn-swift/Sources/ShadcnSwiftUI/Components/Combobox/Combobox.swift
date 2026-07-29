@@ -3,13 +3,6 @@ import SwiftUI
 // MARK: - Combobox
 
 /// An autocomplete input with dropdown suggestions. Corresponds to `<Combobox>` in shadcn/ui.
-///
-/// Usage:
-/// ```swift
-/// @State var query = ""; @State var selection: String?
-/// let items = ["Apple", "Banana", "Cherry"]
-/// Combobox(query: $query, selection: $selection, items: items.filter { query.isEmpty || $0.contains(query) })
-/// ```
 public struct Combobox: View {
     @Environment(\.shadcnToken) private var token
 
@@ -17,6 +10,8 @@ public struct Combobox: View {
     @Binding var selection: String?
     let items: [String]
     @FocusState private var isFocused: Bool
+    @State private var showDropdown = false
+    @State private var triggerFrame: CGRect = .zero
 
     public init(query: Binding<String>, selection: Binding<String?>, items: [String]) {
         self._query = query
@@ -43,40 +38,67 @@ public struct Combobox: View {
             .background(token.card)
             .clipShape(RoundedRectangle(cornerRadius: token.radius))
             .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
+            .onTapGesture {
+                showDropdown = true
+                isFocused = true
+            }
+            .background(
+                GeometryReader { geo in
+                    Color.clear.onAppear { triggerFrame = geo.frame(in: .global) }
+                }
+            )
+        }
+        .onChange(of: isFocused) { _, focused in
+            if focused { showDropdown = true }
+        }
+        .fullScreenCover(isPresented: $showDropdown) {
+            ZStack(alignment: .top) {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        showDropdown = false
+                        isFocused = false
+                    }
 
-            if isFocused && !items.isEmpty {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        ForEach(items, id: \.self) { item in
-                            Button {
-                                selection = item
-                                query = item
-                                isFocused = false
-                            } label: {
-                                HStack {
-                                    Text(item).font(.system(size: 14))
-                                    Spacer()
-                                    if selection == item {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 12, weight: .bold))
-                                            .foregroundColor(token.primary)
+                if !items.isEmpty {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(items, id: \.self) { item in
+                                Button {
+                                    selection = item
+                                    query = item
+                                    showDropdown = false
+                                    isFocused = false
+                                } label: {
+                                    HStack {
+                                        Text(item).font(.system(size: 14)).foregroundColor(token.foreground)
+                                        Spacer()
+                                        if selection == item {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 12, weight: .bold))
+                                                .foregroundColor(token.primary)
+                                        }
                                     }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(selection == item ? token.muted : Color.clear)
+                                    .contentShape(Rectangle())
                                 }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .contentShape(Rectangle())
+                                .buttonStyle(.borderless)
                             }
-                            .buttonStyle(.borderless)
-                            .background(selection == item ? token.muted : Color.clear)
                         }
                     }
+                    .frame(maxHeight: 240)
+                    .padding(.vertical, 4)
+                    .background(token.popover)
+                    .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
+                    .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+                    .padding(.horizontal, 16)
+                    .padding(.top, triggerFrame.maxY + 4)
                 }
-                .frame(maxHeight: 200)
-                .background(token.popover)
-                .clipShape(RoundedRectangle(cornerRadius: token.radius))
-                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
+            .presentationBackground(.clear)
         }
     }
 }

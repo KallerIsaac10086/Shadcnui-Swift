@@ -5,20 +5,29 @@ import ShadcnSwiftUI
 
 struct ContentView: View {
     @State private var selectedTheme = "zinc"
+    @State private var toasts: [ToastItem] = []
 
     var body: some View {
-        TabView {
-            ComponentList(selectedTheme: $selectedTheme)
-                .tabItem {
-                    Label("Components", systemImage: "square.grid.2x2")
-                }
+        ZStack {
+            TabView {
+                ComponentList(selectedTheme: $selectedTheme, toasts: $toasts)
+                    .tabItem {
+                        Label("Components", systemImage: "square.grid.2x2")
+                    }
 
-            Customizer(selectedTheme: $selectedTheme)
-                .tabItem {
-                    Label("Customizer", systemImage: "slider.horizontal.3")
-                }
+                Customizer(selectedTheme: $selectedTheme)
+                    .tabItem {
+                        Label("Customizer", systemImage: "slider.horizontal.3")
+                    }
+            }
+            .shadcnTheme(currentTheme)
+
+            // Global toast overlay
+            VStack {
+                ToastView(toasts: $toasts)
+            }
+            .allowsHitTesting(false)
         }
-        .shadcnTheme(currentTheme)
     }
 
     private var currentTheme: Theme {
@@ -91,6 +100,7 @@ struct GlassSection<Content: View>: View {
 struct ComponentList: View {
     @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
+    @Binding var toasts: [ToastItem]
 
     @State private var switchDefault = false
     @State private var switchSm = false
@@ -117,7 +127,6 @@ struct ComponentList: View {
     @State private var accordionExpanded = false
     @State private var paginationPage = 1
     @State private var dateValue = Date()
-    @State private var toasts: [ToastItem] = []
     @State private var nativeSelect = "light"
     @State private var commandText = ""
     @State private var otpCode = ""
@@ -891,7 +900,6 @@ struct ComponentList: View {
                 Button("Show Success") { toasts.append(ToastItem(title: "Saved", description: "Your changes have been saved.", type: .success)) }.shadcnButton(variant: .outline, size: .sm)
                 Button("Show Error") { toasts.append(ToastItem(title: "Error", description: "Something went wrong.", type: .error)) }.shadcnButton(variant: .outline, size: .sm)
             }
-            .overlay(alignment: .top) { ToastView(toasts: $toasts) }
         }
     }
 

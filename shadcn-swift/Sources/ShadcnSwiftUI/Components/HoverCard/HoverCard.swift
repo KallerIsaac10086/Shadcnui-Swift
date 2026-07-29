@@ -15,10 +15,10 @@ import SwiftUI
 ///         }
 ///     }
 /// ```
-public struct HoverCardModifier<Content: View>: ViewModifier {
+public struct HoverCardModifier<CardContent: View>: ViewModifier {
     @Environment(\.shadcnToken) private var token
 
-    @ViewBuilder let card: () -> Content
+    @ViewBuilder let card: () -> CardContent
     @State private var isVisible = false
 
     public func body(content: Content) -> some View {

@@ -15,9 +15,9 @@ import SwiftUI
 ///         }
 ///     }
 /// ```
-public struct PopoverModifier<Content: View>: ViewModifier {
+public struct PopoverModifier<PopoverContent: View>: ViewModifier {
     @Binding var isPresented: Bool
-    @ViewBuilder let popover: () -> Content
+    @ViewBuilder let popover: () -> PopoverContent
 
     public func body(content: Content) -> some View {
         content

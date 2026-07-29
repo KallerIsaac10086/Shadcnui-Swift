@@ -136,6 +136,124 @@ struct ComponentList: View {
                     }
                 }
 
+                // ── Badge ──
+                GlassSection(title: "Badge") {
+                    VStack(spacing: 10) {
+                        ForEach(BadgeVariant.allCases, id: \.rawValue) { variant in
+                            HStack(spacing: 8) {
+                                Text(variant.rawValue.capitalized)
+                                    .font(.caption)
+                                    .frame(width: 80, alignment: .leading)
+                                    .foregroundStyle(.secondary)
+                                Badge(variant: variant) {
+                                    HStack(spacing: 3) {
+                                        if variant == .destructive || variant == .outline {
+                                            Image(systemName: "xmark")
+                                        }
+                                        Text(variant.rawValue.capitalized)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Input ──
+                GlassSection(title: "Input") {
+                    VStack(spacing: 10) {
+                        InputStateDemo()
+                        Input("Disabled input", text: .constant("Can't edit"))
+                            .disabled(true)
+                        Input("Invalid input", text: .constant("Bad value"), isInvalid: true)
+                    }
+                }
+                .environment(\.shadcnToken, token)
+
+                // ── Switch ──
+                GlassSection(title: "Switch") {
+                    HStack(spacing: 24) {
+                        VStack(spacing: 4) {
+                            Text("default")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Toggle("", isOn: .constant(true))
+                                .toggleStyle(.shadcnSwitch)
+                                .labelsHidden()
+                        }
+                        VStack(spacing: 4) {
+                            Text("sm")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Toggle("", isOn: .constant(false))
+                                .toggleStyle(ShadcnSwitchStyle(size: .sm))
+                                .labelsHidden()
+                        }
+                    }
+                }
+
+                // ── Separator ──
+                GlassSection(title: "Separator") {
+                    VStack(spacing: 12) {
+                        Text("Above separator")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Separator()
+                        Text("Below separator")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        HStack(spacing: 12) {
+                            Text("Left")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Separator(orientation: .vertical)
+                                .frame(height: 24)
+                            Text("Right")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                // ── Avatar ──
+                GlassSection(title: "Avatar") {
+                    VStack(spacing: 16) {
+                        // Sizes
+                        HStack(spacing: 12) {
+                            Avatar(size: .sm) {
+                                AvatarFallback(initials: "S")
+                            }
+                            Avatar(size: .default) {
+                                AvatarFallback(initials: "M")
+                            }
+                            Avatar(size: .lg) {
+                                AvatarFallback(initials: "L")
+                            }
+                        }
+
+                        // With badge
+                        HStack(spacing: 8) {
+                            ZStack(alignment: .bottomTrailing) {
+                                Avatar(size: .lg) {
+                                    AvatarFallback(initials: "JD")
+                                }
+                                AvatarBadge(size: .lg)
+                            }
+                            Text("Jane Doe")
+                                .font(.system(size: 14, weight: .medium))
+                        }
+
+                        // Group
+                        AvatarGroup {
+                            ForEach(["A", "B", "C", "D"], id: \.self) { initial in
+                                Avatar(size: .sm) {
+                                    AvatarFallback(initials: initial)
+                                }
+                            }
+                            AvatarGroupCount(3)
+                        }
+                    }
+                }
+
                 Spacer(minLength: 20)
             }
             .padding(16)
@@ -442,6 +560,15 @@ struct Customizer: View {
         cardBorderWidth = Double(bytes[5]) / 2.0
 
         presetInput = ""
+    }
+}
+
+// MARK: - Input Demo (needs @State)
+
+private struct InputStateDemo: View {
+    @State private var text = ""
+    var body: some View {
+        Input("Type something…", text: $text)
     }
 }
 

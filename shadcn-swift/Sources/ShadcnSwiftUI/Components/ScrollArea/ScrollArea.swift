@@ -12,20 +12,14 @@ import SwiftUI
 /// .frame(height: 200)
 /// ```
 public struct ScrollArea<Content: View>: View {
-    #if os(iOS)
     let showsIndicators: Bool
-    #endif
     @ViewBuilder let content: () -> Content
 
     public init(
-        #if os(iOS)
         showsIndicators: Bool = true,
-        #endif
         @ViewBuilder content: @escaping () -> Content
     ) {
-        #if os(iOS)
         self.showsIndicators = showsIndicators
-        #endif
         self.content = content
     }
 

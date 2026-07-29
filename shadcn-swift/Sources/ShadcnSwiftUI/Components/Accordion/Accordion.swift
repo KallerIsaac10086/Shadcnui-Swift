@@ -19,9 +19,9 @@ import SwiftUI
 ///     }
 /// }
 /// ```
-public struct Accordion<Content: View>: View {
-    public enum AccordionType: Sendable { case single, multiple }
+public enum AccordionType: String, CaseIterable, Sendable { case single, multiple }
 
+public struct Accordion<Content: View>: View {
     let type: AccordionType
     @ViewBuilder let content: () -> Content
     @State private var expanded: Set<String> = []
@@ -52,22 +52,22 @@ public struct Accordion<Content: View>: View {
 
 // MARK: - Environment
 
-private struct AccordionExpandedKey: EnvironmentKey { static let defaultValue: Set<String> = [] }
-private struct AccordionTypeKey: EnvironmentKey { static let defaultValue: Accordion.AccordionType = .single }
+private struct AccordionExpandedKey: EnvironmentKey { nonisolated(unsafe) static let defaultValue: Set<String> = [] }
+private struct AccordionTypeKey: EnvironmentKey { static let defaultValue: AccordionType = .single }
 
 extension EnvironmentValues {
     var accordionExpanded: Set<String> {
         get { self[AccordionExpandedKey.self] }
         set { self[AccordionExpandedKey.self] = newValue }
     }
-    var accordionType: Accordion.AccordionType {
+    var accordionType: AccordionType {
         get { self[AccordionTypeKey.self] }
         set { self[AccordionTypeKey.self] = newValue }
     }
 }
 
 struct AccordionToggleKey: PreferenceKey {
-    static var defaultValue: String = ""
+    nonisolated(unsafe) static var defaultValue: String = ""
     static func reduce(value: inout String, nextValue: () -> String) { value = nextValue() }
 }
 

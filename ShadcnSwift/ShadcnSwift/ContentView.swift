@@ -11,12 +11,24 @@ struct ContentView: View {
                 // Theme picker
                 Picker("Theme", selection: $selectedTheme) {
                     Text("Zinc").tag("zinc")
-                    Text("Neutral").tag("neutral")
-                    Text("Stone").tag("stone")
+                    Text("Rose").tag("rose")
+                    Text("Orange").tag("orange")
+                    Text("Green").tag("green")
                     Text("Blue").tag("blue")
+                    Text("Violet").tag("violet")
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 20)
+
+                // Current theme indicator
+                HStack {
+                    Circle()
+                        .fill(currentTheme.light.primary)
+                        .frame(width: 12, height: 12)
+                    Text("Current: \(currentTheme.name.capitalized)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
 
                 // Section: Button Variants
                 VStack(alignment: .leading, spacing: 12) {
@@ -100,9 +112,11 @@ struct ContentView: View {
 
     private var currentTheme: Theme {
         switch selectedTheme {
-        case "neutral": return Themes.neutral
-        case "stone":   return Themes.stone
+        case "rose":    return Themes.rose
+        case "orange":  return Themes.orange
+        case "green":   return Themes.green
         case "blue":    return Themes.blue
+        case "violet":  return Themes.violet
         default:        return Themes.zinc
         }
     }

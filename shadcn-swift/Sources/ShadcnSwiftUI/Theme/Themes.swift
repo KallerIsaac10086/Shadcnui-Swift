@@ -103,6 +103,190 @@ public enum Themes {
 
     // ── Accent Colors ────────────────────────────────────────────
 
+    public static let rose = Theme(
+        name: "rose",
+        light: DesignToken(
+            background: .oklch("oklch(1 0 0)"),
+            foreground: .oklch("oklch(0.141 0.005 285.823)"),
+            card: .oklch("oklch(1 0 0)"),
+            cardForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            popover: .oklch("oklch(1 0 0)"),
+            popoverForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            primary: .oklch("oklch(0.586 0.253 17.585)"),
+            primaryForeground: .oklch("oklch(0.969 0.015 12.422)"),
+            secondary: .oklch("oklch(0.967 0.001 286.375)"),
+            secondaryForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            muted: .oklch("oklch(0.967 0.001 286.375)"),
+            mutedForeground: .oklch("oklch(0.552 0.016 285.938)"),
+            accent: .oklch("oklch(0.967 0.001 286.375)"),
+            accentForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            destructive: .oklch("oklch(0.577 0.245 27.325)"),
+            border: .oklch("oklch(0.92 0.004 286.32)"),
+            input: .oklch("oklch(0.92 0.004 286.32)"),
+            ring: .oklch("oklch(0.705 0.015 286.067)"),
+            radius: 10
+        ),
+        dark: DesignToken(
+            background: .oklch("oklch(0.141 0.005 285.823)"),
+            foreground: .oklch("oklch(0.985 0 0)"),
+            card: .oklch("oklch(0.21 0.006 285.885)"),
+            cardForeground: .oklch("oklch(0.985 0 0)"),
+            popover: .oklch("oklch(0.21 0.006 285.885)"),
+            popoverForeground: .oklch("oklch(0.985 0 0)"),
+            primary: .oklch("oklch(0.514 0.222 16.935)"),
+            primaryForeground: .oklch("oklch(0.969 0.015 12.422)"),
+            secondary: .oklch("oklch(0.274 0.006 286.033)"),
+            secondaryForeground: .oklch("oklch(0.985 0 0)"),
+            muted: .oklch("oklch(0.274 0.006 286.033)"),
+            mutedForeground: .oklch("oklch(0.705 0.015 286.067)"),
+            accent: .oklch("oklch(0.274 0.006 286.033)"),
+            accentForeground: .oklch("oklch(0.985 0 0)"),
+            destructive: .oklch("oklch(0.704 0.191 22.216)"),
+            border: .oklch("oklch(1 0 0 / 10%)"),
+            input: .oklch("oklch(1 0 0 / 15%)"),
+            ring: .oklch("oklch(0.552 0.016 285.938)"),
+            radius: 10
+        )
+    )
+
+    public static let orange = Theme(
+        name: "orange",
+        light: DesignToken(
+            background: .oklch("oklch(1 0 0)"),
+            foreground: .oklch("oklch(0.141 0.005 285.823)"),
+            card: .oklch("oklch(1 0 0)"),
+            cardForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            popover: .oklch("oklch(1 0 0)"),
+            popoverForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            primary: .oklch("oklch(0.646 0.222 41.116)"),
+            primaryForeground: .oklch("oklch(0.985 0 0)"),
+            secondary: .oklch("oklch(0.967 0.001 286.375)"),
+            secondaryForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            muted: .oklch("oklch(0.967 0.001 286.375)"),
+            mutedForeground: .oklch("oklch(0.552 0.016 285.938)"),
+            accent: .oklch("oklch(0.967 0.001 286.375)"),
+            accentForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            destructive: .oklch("oklch(0.577 0.245 27.325)"),
+            border: .oklch("oklch(0.92 0.004 286.32)"),
+            input: .oklch("oklch(0.92 0.004 286.32)"),
+            ring: .oklch("oklch(0.705 0.015 286.067)"),
+            radius: 10
+        ),
+        dark: DesignToken(
+            background: .oklch("oklch(0.141 0.005 285.823)"),
+            foreground: .oklch("oklch(0.985 0 0)"),
+            card: .oklch("oklch(0.21 0.006 285.885)"),
+            cardForeground: .oklch("oklch(0.985 0 0)"),
+            popover: .oklch("oklch(0.21 0.006 285.885)"),
+            popoverForeground: .oklch("oklch(0.985 0 0)"),
+            primary: .oklch("oklch(0.554 0.195 38.402)"),
+            primaryForeground: .oklch("oklch(0.985 0 0)"),
+            secondary: .oklch("oklch(0.274 0.006 286.033)"),
+            secondaryForeground: .oklch("oklch(0.985 0 0)"),
+            muted: .oklch("oklch(0.274 0.006 286.033)"),
+            mutedForeground: .oklch("oklch(0.705 0.015 286.067)"),
+            accent: .oklch("oklch(0.274 0.006 286.033)"),
+            accentForeground: .oklch("oklch(0.985 0 0)"),
+            destructive: .oklch("oklch(0.704 0.191 22.216)"),
+            border: .oklch("oklch(1 0 0 / 10%)"),
+            input: .oklch("oklch(1 0 0 / 15%)"),
+            ring: .oklch("oklch(0.552 0.016 285.938)"),
+            radius: 10
+        )
+    )
+
+    public static let green = Theme(
+        name: "green",
+        light: DesignToken(
+            background: .oklch("oklch(1 0 0)"),
+            foreground: .oklch("oklch(0.141 0.005 285.823)"),
+            card: .oklch("oklch(1 0 0)"),
+            cardForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            popover: .oklch("oklch(1 0 0)"),
+            popoverForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            primary: .oklch("oklch(0.596 0.145 163.225)"),
+            primaryForeground: .oklch("oklch(0.985 0 0)"),
+            secondary: .oklch("oklch(0.967 0.001 286.375)"),
+            secondaryForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            muted: .oklch("oklch(0.967 0.001 286.375)"),
+            mutedForeground: .oklch("oklch(0.552 0.016 285.938)"),
+            accent: .oklch("oklch(0.967 0.001 286.375)"),
+            accentForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            destructive: .oklch("oklch(0.577 0.245 27.325)"),
+            border: .oklch("oklch(0.92 0.004 286.32)"),
+            input: .oklch("oklch(0.92 0.004 286.32)"),
+            ring: .oklch("oklch(0.705 0.015 286.067)"),
+            radius: 10
+        ),
+        dark: DesignToken(
+            background: .oklch("oklch(0.141 0.005 285.823)"),
+            foreground: .oklch("oklch(0.985 0 0)"),
+            card: .oklch("oklch(0.21 0.006 285.885)"),
+            cardForeground: .oklch("oklch(0.985 0 0)"),
+            popover: .oklch("oklch(0.21 0.006 285.885)"),
+            popoverForeground: .oklch("oklch(0.985 0 0)"),
+            primary: .oklch("oklch(0.508 0.118 165.612)"),
+            primaryForeground: .oklch("oklch(0.985 0 0)"),
+            secondary: .oklch("oklch(0.274 0.006 286.033)"),
+            secondaryForeground: .oklch("oklch(0.985 0 0)"),
+            muted: .oklch("oklch(0.274 0.006 286.033)"),
+            mutedForeground: .oklch("oklch(0.705 0.015 286.067)"),
+            accent: .oklch("oklch(0.274 0.006 286.033)"),
+            accentForeground: .oklch("oklch(0.985 0 0)"),
+            destructive: .oklch("oklch(0.704 0.191 22.216)"),
+            border: .oklch("oklch(1 0 0 / 10%)"),
+            input: .oklch("oklch(1 0 0 / 15%)"),
+            ring: .oklch("oklch(0.552 0.016 285.938)"),
+            radius: 10
+        )
+    )
+
+    public static let violet = Theme(
+        name: "violet",
+        light: DesignToken(
+            background: .oklch("oklch(1 0 0)"),
+            foreground: .oklch("oklch(0.141 0.005 285.823)"),
+            card: .oklch("oklch(1 0 0)"),
+            cardForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            popover: .oklch("oklch(1 0 0)"),
+            popoverForeground: .oklch("oklch(0.141 0.005 285.823)"),
+            primary: .oklch("oklch(0.541 0.281 293.009)"),
+            primaryForeground: .oklch("oklch(0.969 0.016 293.756)"),
+            secondary: .oklch("oklch(0.967 0.001 286.375)"),
+            secondaryForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            muted: .oklch("oklch(0.967 0.001 286.375)"),
+            mutedForeground: .oklch("oklch(0.552 0.016 285.938)"),
+            accent: .oklch("oklch(0.967 0.001 286.375)"),
+            accentForeground: .oklch("oklch(0.21 0.006 285.885)"),
+            destructive: .oklch("oklch(0.577 0.245 27.325)"),
+            border: .oklch("oklch(0.92 0.004 286.32)"),
+            input: .oklch("oklch(0.92 0.004 286.32)"),
+            ring: .oklch("oklch(0.705 0.015 286.067)"),
+            radius: 10
+        ),
+        dark: DesignToken(
+            background: .oklch("oklch(0.141 0.005 285.823)"),
+            foreground: .oklch("oklch(0.985 0 0)"),
+            card: .oklch("oklch(0.21 0.006 285.885)"),
+            cardForeground: .oklch("oklch(0.985 0 0)"),
+            popover: .oklch("oklch(0.21 0.006 285.885)"),
+            popoverForeground: .oklch("oklch(0.985 0 0)"),
+            primary: .oklch("oklch(0.457 0.24 292.771)"),
+            primaryForeground: .oklch("oklch(0.969 0.016 293.756)"),
+            secondary: .oklch("oklch(0.274 0.006 286.033)"),
+            secondaryForeground: .oklch("oklch(0.985 0 0)"),
+            muted: .oklch("oklch(0.274 0.006 286.033)"),
+            mutedForeground: .oklch("oklch(0.705 0.015 286.067)"),
+            accent: .oklch("oklch(0.274 0.006 286.033)"),
+            accentForeground: .oklch("oklch(0.985 0 0)"),
+            destructive: .oklch("oklch(0.704 0.191 22.216)"),
+            border: .oklch("oklch(1 0 0 / 10%)"),
+            input: .oklch("oklch(1 0 0 / 15%)"),
+            ring: .oklch("oklch(0.552 0.016 285.938)"),
+            radius: 10
+        )
+    )
+
     public static let blue = Theme(
         name: "blue",
         light: DesignToken(

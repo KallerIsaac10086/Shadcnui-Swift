@@ -71,19 +71,25 @@ public struct Input: View {
             SecureField(placeholder, text: $text)
         case .email:
             TextField(placeholder, text: $text)
+                #if !os(macOS)
                 .keyboardType(.emailAddress)
                 .textContentType(.emailAddress)
+                #endif
                 .autocorrectionDisabled()
                 #if !os(macOS)
                 .textInputAutocapitalization(.never)
                 #endif
         case .number:
             TextField(placeholder, text: $text)
+                #if !os(macOS)
                 .keyboardType(.decimalPad)
+                #endif
         case .url:
             TextField(placeholder, text: $text)
+                #if !os(macOS)
                 .keyboardType(.URL)
                 .textContentType(.URL)
+                #endif
                 .autocorrectionDisabled()
                 #if !os(macOS)
                 .textInputAutocapitalization(.never)

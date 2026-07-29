@@ -19,10 +19,10 @@ import SwiftUI
 ///         }
 ///     }
 /// ```
-public struct AlertDialogModifier<Content: View>: ViewModifier {
+public struct AlertDialogModifier<CardContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let size: DialogSize
-    @ViewBuilder let content: () -> Content
+    @ViewBuilder let content: () -> CardContent
 
     public func body(content: Content) -> some View {
         ZStack {

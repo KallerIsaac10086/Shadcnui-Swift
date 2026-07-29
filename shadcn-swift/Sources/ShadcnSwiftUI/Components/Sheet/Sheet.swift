@@ -26,10 +26,10 @@ public enum SheetSide: String, CaseIterable, Sendable {
 ///         }
 ///     }
 /// ```
-public struct SheetOverlayModifier<Content: View>: ViewModifier {
+public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let side: SheetSide
-    @ViewBuilder let sheet: () -> Content
+    @ViewBuilder let sheet: () -> SheetContent
 
     public func body(content: Content) -> some View {
         ZStack {
@@ -143,15 +143,15 @@ public struct SheetContent<Content: View>: View {
             ))
         case .trailing:
             return AnyShape(UnevenRoundedRectangle(
-                bottomLeadingRadius: token.radius * 1.5,
-                topLeadingRadius: token.radius * 1.5
+                topLeadingRadius: token.radius * 1.5,
+                bottomLeadingRadius: token.radius * 1.5
             ))
         }
     }
 }
 
-private struct AnyShape: Shape {
-    let _path: (CGRect) -> Path
+private struct AnyShape: Shape, @unchecked Sendable {
+    let _path: @Sendable (CGRect) -> Path
     init<S: Shape>(_ shape: S) { _path = { shape.path(in: $0) } }
     func path(in rect: CGRect) -> Path { _path(rect) }
 }

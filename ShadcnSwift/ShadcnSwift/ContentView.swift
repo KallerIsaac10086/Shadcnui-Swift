@@ -136,11 +136,97 @@ struct ComponentList: View {
                     }
                 }
 
+                // ── Share / Load Preset ──
+                GlassSection(title: "Share Preset") {
+                    VStack(spacing: 10) {
+                        // Share
+                        HStack(spacing: 8) {
+                            Text(presetCode.isEmpty ? "Tap to generate…" : presetCode)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundStyle(presetCode.isEmpty ? .secondary : .primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Spacer()
+                            Button {
+                                presetCode = encodePreset()
+                                UIPasteboard.general.string = presetCode
+                                showCopiedToast = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    showCopiedToast = false
+                                }
+                            } label: {
+                                Image(systemName: showCopiedToast ? "checkmark" : "doc.on.doc")
+                                    .font(.system(size: 13))
+                            }
+                            .shadcnButton(variant: .ghost, size: .iconXs)
+                        }
+
+                        // Load
+                        HStack(spacing: 8) {
+                            TextField("Paste preset code", text: $presetInput)
+                                .textFieldStyle(GlassTextFieldStyle())
+                                .font(.system(size: 13, design: .monospaced))
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                            Button("Apply") { applyPreset(presetInput) }
+                                .shadcnButton(variant: .outline, size: .xs)
+                                .disabled(presetInput.isEmpty)
+                        }
+                    }
+                }
+
                 Spacer(minLength: 20)
             }
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())
+    }
+
+    // MARK: - Preset Encode / Decode
+
+    private let themeIndex: [String: UInt8] = ["zinc":0, "rose":1, "orange":2, "green":3, "blue":4, "violet":5]
+    private let themeFromIndex: [UInt8: String] = [0:"zinc", 1:"rose", 2:"orange", 3:"green", 4:"blue", 5:"violet"]
+    private let variantIndex: [ButtonVariant: UInt8] = [.default:0, .outline:1, .secondary:2, .ghost:3, .destructive:4, .link:5]
+    private let variantFromIndex: [UInt8: ButtonVariant] = [0:.default, 1:.outline, 2:.secondary, 3:.ghost, 4:.destructive, 5:.link]
+
+    func encodePreset() -> String {
+        var bytes = [UInt8]()
+        bytes.append(1) // version
+        let ti = themeIndex[selectedTheme] ?? 0
+        let vi = variantIndex[customVariant] ?? 0
+        bytes.append(ti << 5 | vi << 2 | (isFullWidth ? 2 : 0) | (cardShowCustomBorder ? 1 : 0))
+        bytes.append(UInt8(Int(cornerRadius)))
+        bytes.append(UInt8(Int(shadowRadius)))
+        bytes.append(UInt8(Int(cardCorner)))
+        bytes.append(UInt8(Int(cardBorderWidth * 2)))
+        return Data(bytes).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    func applyPreset(_ code: String) {
+        var s = code
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        while s.count % 4 != 0 { s += "=" }
+        guard let data = Data(base64Encoded: s), data.count >= 6 else { return }
+
+        let bytes = [UInt8](data)
+        guard bytes[0] == 1 else { return } // version check
+
+        let b1 = bytes[1]
+        selectedTheme = themeFromIndex[b1 >> 5] ?? "zinc"
+        customVariant = variantFromIndex[(b1 >> 2) & 0x07] ?? .default
+        isFullWidth = (b1 & 2) != 0
+        cardShowCustomBorder = (b1 & 1) != 0
+
+        cornerRadius = Double(bytes[2])
+        shadowRadius = Double(bytes[3])
+        cardCorner = Double(bytes[4])
+        cardBorderWidth = Double(bytes[5]) / 2.0
+
+        presetInput = ""
     }
 }
 
@@ -159,6 +245,10 @@ struct Customizer: View {
     @State private var cardCorner: Double = 15
     @State private var cardBorderWidth: Double = 1
     @State private var cardShowCustomBorder = false
+
+    @State private var presetInput = ""
+    @State private var presetCode = ""
+    @State private var showCopiedToast = false
 
     private var currentTheme: Theme {
         switch selectedTheme {
@@ -340,11 +430,97 @@ struct Customizer: View {
                     }
                 }
 
+                // ── Share / Load Preset ──
+                GlassSection(title: "Share Preset") {
+                    VStack(spacing: 10) {
+                        // Share
+                        HStack(spacing: 8) {
+                            Text(presetCode.isEmpty ? "Tap to generate…" : presetCode)
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundStyle(presetCode.isEmpty ? .secondary : .primary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Spacer()
+                            Button {
+                                presetCode = encodePreset()
+                                UIPasteboard.general.string = presetCode
+                                showCopiedToast = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    showCopiedToast = false
+                                }
+                            } label: {
+                                Image(systemName: showCopiedToast ? "checkmark" : "doc.on.doc")
+                                    .font(.system(size: 13))
+                            }
+                            .shadcnButton(variant: .ghost, size: .iconXs)
+                        }
+
+                        // Load
+                        HStack(spacing: 8) {
+                            TextField("Paste preset code", text: $presetInput)
+                                .textFieldStyle(GlassTextFieldStyle())
+                                .font(.system(size: 13, design: .monospaced))
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                            Button("Apply") { applyPreset(presetInput) }
+                                .shadcnButton(variant: .outline, size: .xs)
+                                .disabled(presetInput.isEmpty)
+                        }
+                    }
+                }
+
                 Spacer(minLength: 20)
             }
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())
+    }
+
+    // MARK: - Preset Encode / Decode
+
+    private let themeIndex: [String: UInt8] = ["zinc":0, "rose":1, "orange":2, "green":3, "blue":4, "violet":5]
+    private let themeFromIndex: [UInt8: String] = [0:"zinc", 1:"rose", 2:"orange", 3:"green", 4:"blue", 5:"violet"]
+    private let variantIndex: [ButtonVariant: UInt8] = [.default:0, .outline:1, .secondary:2, .ghost:3, .destructive:4, .link:5]
+    private let variantFromIndex: [UInt8: ButtonVariant] = [0:.default, 1:.outline, 2:.secondary, 3:.ghost, 4:.destructive, 5:.link]
+
+    func encodePreset() -> String {
+        var bytes = [UInt8]()
+        bytes.append(1) // version
+        let ti = themeIndex[selectedTheme] ?? 0
+        let vi = variantIndex[customVariant] ?? 0
+        bytes.append(ti << 5 | vi << 2 | (isFullWidth ? 2 : 0) | (cardShowCustomBorder ? 1 : 0))
+        bytes.append(UInt8(Int(cornerRadius)))
+        bytes.append(UInt8(Int(shadowRadius)))
+        bytes.append(UInt8(Int(cardCorner)))
+        bytes.append(UInt8(Int(cardBorderWidth * 2)))
+        return Data(bytes).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+
+    func applyPreset(_ code: String) {
+        var s = code
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        while s.count % 4 != 0 { s += "=" }
+        guard let data = Data(base64Encoded: s), data.count >= 6 else { return }
+
+        let bytes = [UInt8](data)
+        guard bytes[0] == 1 else { return } // version check
+
+        let b1 = bytes[1]
+        selectedTheme = themeFromIndex[b1 >> 5] ?? "zinc"
+        customVariant = variantFromIndex[(b1 >> 2) & 0x07] ?? .default
+        isFullWidth = (b1 & 2) != 0
+        cardShowCustomBorder = (b1 & 1) != 0
+
+        cornerRadius = Double(bytes[2])
+        shadowRadius = Double(bytes[3])
+        cardCorner = Double(bytes[4])
+        cardBorderWidth = Double(bytes[5]) / 2.0
+
+        presetInput = ""
     }
 }
 

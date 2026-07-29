@@ -1,0 +1,24 @@
+main:
+  push:
+    - name: sync-to-github
+      imports:
+        - https://cnb.cool/Isaac80686/keys/-/blob/main/github.yml
+      docker:
+        image: alpine/git:latest
+      stages:
+        - name: push-to-github
+          script: |
+            set -e
+            echo ">>> Syncing to GitHub mirror..."
+
+            git clone --bare "https://cnb:${CNB_TOKEN}@cnb.cool/${CNB_REPO_SLUG}.git" /tmp/repo.git
+            cd /tmp/repo.git
+
+            # Strip .cnb.yml from all refs so it never lands on GitHub
+            git filter-branch --force --index-filter \
+              'git rm --cached --ignore-unmatch .cnb.yml' \
+              --prune-empty --tag-name-filter cat -- --all
+
+            git push --mirror "https://KallerIsaac10086:${GITHUB_TOKEN}@github.com/KallerIsaac10086/Shadcnui-Swift.git"
+
+            echo ">>> Sync complete!"

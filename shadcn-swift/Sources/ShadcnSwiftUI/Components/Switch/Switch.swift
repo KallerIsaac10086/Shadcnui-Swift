@@ -32,30 +32,30 @@ public struct ShadcnSwitchStyle: ToggleStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        let isOn = configuration.isOn
         let trackW: CGFloat = size == .default ? 32 : 24
         let trackH: CGFloat = size == .default ? 18.4 : 14
         let thumbD: CGFloat = size == .default ? 16 : 12
 
-        // Visual switch track + thumb
-        ZStack(alignment: isOn ? .trailing : .leading) {
-            Capsule()
-                .fill(isOn ? token.primary : token.input)
-                .frame(width: trackW, height: trackH)
-
-            Circle()
-                .fill(token.background)
-                .frame(width: thumbD, height: thumbD)
-                .padding(2)
-        }
-        .frame(minWidth: 44, minHeight: 44)     // accessibility hit area
-        .contentShape(Rectangle())               // expand tap target
-        .opacity(isEnabled ? 1 : 0.5)
-        .onTapGesture {
+        Button {
             withAnimation(.easeInOut(duration: 0.15)) {
                 configuration.isOn.toggle()
             }
+        } label: {
+            ZStack(alignment: configuration.isOn ? .trailing : .leading) {
+                Capsule()
+                    .fill(configuration.isOn ? token.primary : token.input)
+                    .frame(width: trackW, height: trackH)
+
+                Circle()
+                    .fill(token.background)
+                    .frame(width: thumbD, height: thumbD)
+                    .padding(2)
+            }
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .opacity(isEnabled ? 1 : 0.5)
     }
 }
 

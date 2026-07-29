@@ -58,7 +58,7 @@ public struct ShadcnToggle<Label: View>: View {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                 .overlay(borderOverlay)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
     }
 
     private var height: CGFloat {

@@ -76,6 +76,13 @@ struct ComponentList: View {
     @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
 
+    @State private var switchDefault = false, switchSm = false
+    @State private var inputText = ""
+    @State private var textareaText = ""
+    @State private var checkbox1 = false, checkbox2 = true
+    @State private var radioSelection = "a"
+    @State private var toggleBold = false, toggleItalic = true
+
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
     ]
@@ -88,9 +95,16 @@ struct ComponentList: View {
 
                 LazyVGrid(columns: columns, spacing: 16) {
                     section_buttons
+                    section_toggle
                     section_badge
-                    section_input
+                    section_checkbox
+                    section_radio
                     section_switch
+                    section_input
+                    section_textarea
+                    section_progress
+                    section_skeleton
+                    section_alert
                     section_separator
                     section_avatar
                     section_card
@@ -240,6 +254,82 @@ struct ComponentList: View {
                     Button("Dismiss") { }.shadcnButton(variant: .outline, size: .sm)
                     Button("View All") { }.shadcnButton(variant: .default, size: .sm)
                 }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_toggle: some View {
+        GlassSection(title: "Toggle") {
+            HStack(spacing: 8) {
+                ShadcnToggle(isPressed: $toggleBold) {
+                    Image(systemName: "bold").frame(width: 16, height: 16)
+                }
+                ShadcnToggle(variant: .outline, isPressed: $toggleItalic) {
+                    Image(systemName: "italic").frame(width: 16, height: 16)
+                }
+                ShadcnToggle(size: .sm, isPressed: .constant(false)) {
+                    Image(systemName: "underline").frame(width: 14, height: 14)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_checkbox: some View {
+        GlassSection(title: "Checkbox") {
+            HStack(spacing: 16) {
+                HStack(spacing: 6) { Checkbox(isChecked: $checkbox1); Text("Option A").font(.system(size: 14)) }
+                HStack(spacing: 6) { Checkbox(isChecked: $checkbox2); Text("Option B").font(.system(size: 14)) }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_radio: some View {
+        GlassSection(title: "Radio Group") {
+            RadioGroup(selection: $radioSelection) {
+                RadioItem("iOS", value: "a")
+                RadioItem("macOS", value: "b")
+                RadioItem("watchOS", value: "c")
+            }
+        }
+    }
+
+    @ViewBuilder private var section_textarea: some View {
+        GlassSection(title: "Textarea") {
+            Textarea("Write something…", text: $textareaText, minHeight: 64)
+        }
+    }
+
+    @ViewBuilder private var section_progress: some View {
+        GlassSection(title: "Progress") {
+            VStack(spacing: 8) {
+                Progress(value: 0.65)
+                Progress(value: 0.3)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_skeleton: some View {
+        GlassSection(title: "Skeleton") {
+            VStack(spacing: 8) {
+                Skeleton().frame(height: 16)
+                Skeleton().frame(height: 16)
+                Skeleton().frame(width: 120, height: 16)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_alert: some View {
+        GlassSection(title: "Alert") {
+            Alert {
+                AlertTitle("Success")
+                AlertDescription("Your changes have been saved.")
+            }
+            Alert(variant: .destructive) {
+                AlertTitle("Error")
+                AlertDescription("Something went wrong.")
+            }
+            AlertAction {
+                Button("Retry") { }.shadcnButton(variant: .outline, size: .sm)
             }
         }
     }

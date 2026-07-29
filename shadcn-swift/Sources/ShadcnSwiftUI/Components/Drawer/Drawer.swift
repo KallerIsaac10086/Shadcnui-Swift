@@ -10,8 +10,9 @@ public struct DrawerModifier<DrawerContent: View>: ViewModifier {
     @State private var dragOffset: CGFloat = 0
 
     public func body(content: Content) -> some View {
-        content
-            .fullScreenCover(isPresented: $isPresented) {
+        ZStack {
+            content
+            if isPresented {
                 GeometryReader { geo in
                     ZStack(alignment: .bottom) {
                         Color.black.opacity(0.4)
@@ -48,8 +49,9 @@ public struct DrawerModifier<DrawerContent: View>: ViewModifier {
                     }
                     .animation(.easeInOut(duration: 0.25), value: isPresented)
                 }
-                .presentationBackground(.clear)
             }
+        }
+        .animation(.easeInOut(duration: 0.25), value: isPresented)
     }
 
     private func dismiss() {

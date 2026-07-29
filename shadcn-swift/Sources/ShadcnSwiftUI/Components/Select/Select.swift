@@ -53,32 +53,33 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
             isOpen = false
         })
         .environment(\.selectCurrentValue, selection)
-        .fullScreenCover(isPresented: $isOpen) {
-            ZStack(alignment: .top) {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                    .onTapGesture { isOpen = false }
+        .overlay(alignment: .topLeading) {
+            if isOpen {
+                ZStack(alignment: .top) {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture { isOpen = false }
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        content()
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            content()
+                        }
                     }
+                    .frame(maxHeight: 240)
+                    .padding(.vertical, 4)
+                    .background(token.popover)
+                    .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: token.radius)
+                            .strokeBorder(token.border, lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
+                    .padding(.horizontal, 16)
+                    .padding(.top, triggerFrame.maxY + 4)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
                 }
-                .frame(maxHeight: 240)
-                .padding(.vertical, 4)
-                .background(token.popover)
-                .clipShape(RoundedRectangle(cornerRadius: token.radius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: token.radius)
-                        .strokeBorder(token.border, lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
-                .padding(.horizontal, 16)
-                .padding(.top, triggerFrame.maxY + 4)
-                .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+                .animation(.easeInOut(duration: 0.15), value: isOpen)
             }
-            .animation(.easeInOut(duration: 0.15), value: isOpen)
-            .presentationBackground(.clear)
         }
     }
 }

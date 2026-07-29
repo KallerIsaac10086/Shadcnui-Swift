@@ -48,7 +48,9 @@ public struct InputOTP: View {
                         get: { code },
                         set: { handleInput($0) }
                     ))
+                    #if !os(macOS)
                     .keyboardType(.numberPad)
+                    #endif
                     .focused($focusedIndex, equals: i)
                     .opacity(0)
                     .frame(width: 0, height: 0)

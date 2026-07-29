@@ -1,5 +1,5 @@
 import SwiftUI
-import ShadcnSwift
+import ShadcnSwiftUI
 
 struct ContentView: View {
     @State private var selectedTheme = "zinc"

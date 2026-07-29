@@ -3,16 +3,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "ShadcnSwift",
+    name: "ShadcnSwiftUI",
     platforms: [
         .iOS(.v18),
         .macOS(.v15),
     ],
     products: [
-        .library(name: "ShadcnSwift", targets: ["ShadcnSwift"]),
+        .library(name: "ShadcnSwiftUI", targets: ["ShadcnSwiftUI"]),
     ],
     targets: [
-        .target(name: "ShadcnSwift", path: "Sources/ShadcnSwift"),
-        .testTarget(name: "ShadcnSwiftTests", dependencies: ["ShadcnSwift"], path: "Tests/ShadcnSwiftTests"),
+        .target(name: "ShadcnSwiftUI", path: "Sources/ShadcnSwiftUI"),
+        .testTarget(name: "ShadcnSwiftUITests", dependencies: ["ShadcnSwiftUI"], path: "Tests/ShadcnSwiftUITests"),
     ]
 )

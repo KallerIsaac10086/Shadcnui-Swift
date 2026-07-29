@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5BBF6BF83018AD4700D4C50B /* ShadcnSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 5BBF6BF73018AD4700D4C50B /* ShadcnSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		5BBF6BDA3018ABCB00D4C50B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5BBF6BF83018AD4700D4C50B /* ShadcnSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = ShadcnSwift;
 			packageProductDependencies = (
+				5BBF6BF73018AD4700D4C50B /* ShadcnSwift */,
 			);
 			productName = ShadcnSwift;
 			productReference = 5BBF6BCC3018ABCA00D4C50B /* ShadcnSwift.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 5BBF6BC33018ABCA00D4C50B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5BBF6BF63018AD4700D4C50B /* XCLocalSwiftPackageReference "../shadcn-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5BBF6BCD3018ABCA00D4C50B /* Products */;
 			projectDirPath = "";
@@ -414,13 +423,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Kaller.ShadcnSwift;
+				PRODUCT_MODULE_NAME = ShadcnSwiftApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -458,13 +466,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Kaller.ShadcnSwift;
+				PRODUCT_MODULE_NAME = ShadcnSwiftApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -615,6 +622,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5BBF6BF63018AD4700D4C50B /* XCLocalSwiftPackageReference "../shadcn-swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../shadcn-swift";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5BBF6BF73018AD4700D4C50B /* ShadcnSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ShadcnSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5BBF6BC43018ABCA00D4C50B /* Project object */;
 }

@@ -90,6 +90,24 @@ struct ComponentList: View {
     @State private var toggleBold = false
     @State private var toggleItalic = true
 
+    // New component states
+    @State private var sliderValue: Double = 0.5
+    @State private var tabSelection = "account"
+    @State private var showDialog = false
+    @State private var showSheet = false
+    @State private var showDrawer = false
+    @State private var showAlertDialog = false
+    @State private var showPopover = false
+    @State private var selectValue = "light"
+    @State private var comboboxQuery = ""
+    @State private var comboboxSelection: String?
+    @State private var carouselIndex = 0
+    @State private var accordionExpanded = false
+    @State private var paginationPage = 1
+    @State private var dateValue = Date()
+    @State private var toasts: [ToastItem] = []
+    @State private var nativeSelect = "light"
+
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
     ]
@@ -101,20 +119,33 @@ struct ComponentList: View {
                     .frame(maxWidth: 480)
 
                 LazyVGrid(columns: columns, spacing: 16) {
-                    section_buttons
-                    section_toggle
-                    section_badge
-                    section_checkbox
-                    section_radio
-                    section_switch
-                    section_input
-                    section_textarea
-                    section_progress
-                    section_skeleton
-                    section_alert
-                    section_separator
-                    section_avatar
-                    section_card
+                    section_buttons; section_toggle
+                    section_badge; section_checkbox
+                    section_radio; section_switch
+                    section_input; section_textarea
+                    section_progress; section_skeleton
+                    section_alert; section_separator
+                    section_avatar; section_card
+                    // ── New components ──
+                    section_slider; section_spinner
+                    section_kbd; section_collapsible
+                    section_accordion; section_tabs
+                    section_breadcrumb; section_select
+                    section_combobox; section_nativeSelect
+                    section_dialog; section_sheet
+                    section_drawer; section_alertDialog
+                    section_tooltip; section_popover
+                    section_hoverCard; section_dropdownMenu
+                    section_contextMenu; section_carousel
+                    section_pagination; section_empty
+                    section_field; section_item
+                    section_typography; section_aspectRatio
+                    section_table; section_datePicker
+                    section_buttonGroup; section_inputGroup
+                    section_bubble; section_message
+                    section_attachment; section_scrollArea
+                    section_navigationMenu; section_menubar
+                    section_toast; section_command
                 }
                 .frame(maxWidth: 976)
 
@@ -336,6 +367,495 @@ struct ComponentList: View {
             }
             AlertAction {
                 Button("Retry") { }.shadcnButton(variant: .outline, size: .sm)
+            }
+        }
+    }
+
+    // MARK: - New Component Sections
+
+    @ViewBuilder private var section_slider: some View {
+        GlassSection(title: "Slider") {
+            VStack(spacing: 8) {
+                Text(String(format: "%.1f", sliderValue)).font(.caption).foregroundStyle(.secondary)
+                Slider(value: $sliderValue, in: 0...1, step: 0.1)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_spinner: some View {
+        GlassSection(title: "Spinner") {
+            HStack(spacing: 24) {
+                Spinner()
+                Spinner().frame(width: 24, height: 24)
+                Spinner().frame(width: 32, height: 32)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_kbd: some View {
+        GlassSection(title: "Kbd") {
+            VStack(spacing: 8) {
+                KbdGroup { Kbd("⌘"); Kbd("K") }
+                HStack(spacing: 4) { Kbd("⌥"); Text("+").font(.caption); Kbd("Tab") }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_collapsible: some View {
+        GlassSection(title: "Collapsible") {
+            Collapsible {
+                Text("Show details").font(.system(size: 14, weight: .medium))
+            } content: {
+                Text("Hidden content revealed on tap.").font(.system(size: 14)).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_accordion: some View {
+        GlassSection(title: "Accordion") {
+            Accordion(type: .single) {
+                AccordionItem(value: "1") {
+                    AccordionTrigger("Is it accessible?", value: "1")
+                    AccordionContent(value: "1") {
+                        Text("Yes. Built on SwiftUI.").font(.system(size: 14)).foregroundStyle(.secondary).padding(.bottom, 12)
+                    }
+                }
+                AccordionItem(value: "2") {
+                    AccordionTrigger("Is it themed?", value: "2")
+                    AccordionContent(value: "2") {
+                        Text("Yes. Follows DesignToken.").font(.system(size: 14)).foregroundStyle(.secondary).padding(.bottom, 12)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_tabs: some View {
+        GlassSection(title: "Tabs") {
+            VStack(spacing: 8) {
+                Tabs(selection: $tabSelection) {
+                    TabsList {
+                        TabsTrigger("Account", value: "account")
+                        TabsTrigger("Password", value: "password")
+                        TabsTrigger("Settings", value: "settings")
+                    }
+                    TabsContent(value: "account") { Text("Account tab content").font(.system(size: 14)).padding(.top, 8) }
+                    TabsContent(value: "password") { Text("Password tab content").font(.system(size: 14)).padding(.top, 8) }
+                    TabsContent(value: "settings") { Text("Settings tab content").font(.system(size: 14)).padding(.top, 8) }
+                }
+                Tabs(selection: $tabSelection) {
+                    TabsList(variant: .line) {
+                        TabsTrigger("Account", value: "account", variant: .line)
+                        TabsTrigger("Password", value: "password", variant: .line)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_breadcrumb: some View {
+        GlassSection(title: "Breadcrumb") {
+            Breadcrumb {
+                BreadcrumbItem { BreadcrumbLink("Home") }
+                BreadcrumbSeparator()
+                BreadcrumbItem { BreadcrumbLink("Products") }
+                BreadcrumbSeparator()
+                BreadcrumbItem { BreadcrumbPage("Current") }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_select: some View {
+        GlassSection(title: "Select") {
+            Select(placeholder: "Theme", selection: $selectValue) {
+                SelectItem("Light", value: "light", selection: $selectValue)
+                SelectItem("Dark", value: "dark", selection: $selectValue)
+                SelectItem("System", value: "system", selection: $selectValue)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_combobox: some View {
+        GlassSection(title: "Combobox") {
+            let fruits = ["Apple", "Banana", "Blueberry", "Cherry", "Grape", "Mango", "Orange", "Peach", "Strawberry"]
+            let filtered = comboboxQuery.isEmpty ? fruits : fruits.filter { $0.lowercased().contains(comboboxQuery.lowercased()) }
+            Combobox(query: $comboboxQuery, selection: $comboboxSelection, items: filtered)
+        }
+    }
+
+    @ViewBuilder private var section_nativeSelect: some View {
+        GlassSection(title: "NativeSelect") {
+            if #available(iOS 16.0, macOS 13.0, *) {
+                NativeSelect(placeholder: "Theme", selection: $nativeSelect, options: [("Light", "light"), ("Dark", "dark"), ("System", "system")])
+            }
+        }
+    }
+
+    @ViewBuilder private var section_dialog: some View {
+        GlassSection(title: "Dialog") {
+            VStack(spacing: 8) {
+                Button("Open Dialog") { showDialog = true }.shadcnButton(variant: .outline, size: .sm)
+            }
+            .dialog(isPresented: $showDialog) {
+                DialogContent(size: .sm) {
+                    DialogHeader {
+                        DialogTitle("Edit Profile")
+                        DialogDescription("Make changes to your profile here.")
+                    }
+                    DialogFooter {
+                        Button("Cancel") { showDialog = false }.shadcnButton(variant: .outline, size: .sm)
+                        Button("Save") { showDialog = false }.shadcnButton(size: .sm)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_sheet: some View {
+        GlassSection(title: "Sheet") {
+            Button("Open Sheet") { showSheet = true }.shadcnButton(variant: .outline, size: .sm)
+                .sheetOverlay(isPresented: $showSheet, side: .bottom) {
+                    SheetContent {
+                        SheetHeader {
+                            SheetTitle("Sheet Title")
+                            SheetDescription("This is a sheet panel.")
+                        }
+                        SheetFooter {
+                            Button("Close") { showSheet = false }.shadcnButton(size: .sm)
+                        }
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder private var section_drawer: some View {
+        GlassSection(title: "Drawer") {
+            Button("Open Drawer") { showDrawer = true }.shadcnButton(variant: .outline, size: .sm)
+                .drawer(isPresented: $showDrawer, snapPoints: [0.4]) {
+                    DrawerContent {
+                        DrawerHeader {
+                            DrawerTitle("Drawer")
+                            DrawerDescription("Swipe down to dismiss.")
+                        }
+                        DrawerFooter {
+                            Button("Close") { showDrawer = false }.shadcnButton(size: .sm)
+                        }
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder private var section_alertDialog: some View {
+        GlassSection(title: "AlertDialog") {
+            Button("Delete") { showAlertDialog = true }.shadcnButton(variant: .destructive, size: .sm)
+                .alertDialog(isPresented: $showAlertDialog, size: .sm) {
+                    AlertDialogHeader {
+                        AlertDialogTitle("Delete Chat")
+                        AlertDialogDescription("This action is permanent and cannot be undone.")
+                    }
+                    AlertDialogFooter {
+                        AlertDialogCancel { showAlertDialog = false }
+                        AlertDialogAction("Delete", variant: .destructive) { showAlertDialog = false }
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder private var section_tooltip: some View {
+        GlassSection(title: "Tooltip") {
+            HStack(spacing: 16) {
+                Text("Hover/Long-press").font(.system(size: 14)).padding(8).background(token.muted).clipShape(RoundedRectangle(cornerRadius: 6))
+                    .tooltip("This is a tooltip", size: .default)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_popover: some View {
+        GlassSection(title: "Popover") {
+            Button("Toggle Popover") { showPopover.toggle() }.shadcnButton(variant: .outline, size: .sm)
+                .popover(isPresented: $showPopover) {
+                    PopoverContent {
+                        PopoverTitle("Notifications")
+                        PopoverDescription("You have 3 new messages.")
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder private var section_hoverCard: some View {
+        GlassSection(title: "HoverCard") {
+            Text("Hover me").font(.system(size: 14)).padding(8).background(token.muted).clipShape(RoundedRectangle(cornerRadius: 6))
+                .hoverCard {
+                    HoverCardContent {
+                        Text("More details here").font(.system(size: 14))
+                        Text("Additional context").font(.system(size: 12)).foregroundStyle(.secondary)
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder private var section_dropdownMenu: some View {
+        GlassSection(title: "Dropdown Menu") {
+            Menu {
+                Button("Profile") {}
+                Button("Settings") {}
+                Divider()
+                Button("Logout", role: .destructive) {}
+            } label: {
+                Text("Open Menu").shadcnButton(variant: .outline, size: .sm)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_contextMenu: some View {
+        GlassSection(title: "ContextMenu") {
+            Text("Long-press or right-click")
+                .font(.system(size: 14)).padding(12).background(token.card).clipShape(RoundedRectangle(cornerRadius: token.radius))
+                .shadcnContextMenu {
+                    Button("Copy") {}
+                    Button("Share") {}
+                    Divider()
+                    Button("Delete", role: .destructive) {}
+                }
+        }
+    }
+
+    @ViewBuilder private var section_carousel: some View {
+        GlassSection(title: "Carousel") {
+            Carousel {
+                CarouselItem(index: 0) { Color.blue.opacity(0.3).frame(height: 100).overlay(Text("Page 1")).clipShape(RoundedRectangle(cornerRadius: 8)) }
+                CarouselItem(index: 1) { Color.green.opacity(0.3).frame(height: 100).overlay(Text("Page 2")).clipShape(RoundedRectangle(cornerRadius: 8)) }
+                CarouselItem(index: 2) { Color.orange.opacity(0.3).frame(height: 100).overlay(Text("Page 3")).clipShape(RoundedRectangle(cornerRadius: 8)) }
+            }
+            .frame(height: 120)
+        }
+    }
+
+    @ViewBuilder private var section_pagination: some View {
+        GlassSection(title: "Pagination") {
+            Pagination {
+                PaginationPrevious(action: { if paginationPage > 1 { paginationPage -= 1 } }, disabled: paginationPage <= 1)
+                PaginationLink(page: 1, isActive: paginationPage == 1) { paginationPage = 1 }
+                PaginationLink(page: 2, isActive: paginationPage == 2) { paginationPage = 2 }
+                PaginationLink(page: 3, isActive: paginationPage == 3) { paginationPage = 3 }
+                PaginationNext(action: { if paginationPage < 3 { paginationPage += 1 } }, disabled: paginationPage >= 3)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_empty: some View {
+        GlassSection(title: "Empty State") {
+            Empty {
+                EmptyHeader {
+                    EmptyMedia(icon: Image(systemName: "tray"))
+                    EmptyTitle("No items")
+                    EmptyDescription("Get started by creating your first item.")
+                }
+                EmptyContent {
+                    Button("Add Item") { }.shadcnButton(size: .sm)
+                }
+            }
+            .frame(height: 200)
+        }
+    }
+
+    @ViewBuilder private var section_field: some View {
+        GlassSection(title: "Field") {
+            Field(isInvalid: false) {
+                FieldLabel("Email", required: true)
+                Input("Enter email", text: .constant(""))
+                FieldDescription("We'll never share your email.")
+                FieldError("")
+            }
+        }
+    }
+
+    @ViewBuilder private var section_item: some View {
+        GlassSection(title: "Item") {
+            VStack(spacing: 8) {
+                Item {
+                    ItemMedia { Image(systemName: "person.circle.fill").font(.system(size: 28)).foregroundColor(token.mutedForeground) }
+                    ItemContent { ItemTitle("John Doe"); ItemDescription("john@example.com") }
+                    ItemActions { Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(token.mutedForeground) }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_typography: some View {
+        GlassSection(title: "Typography") {
+            VStack(alignment: .leading, spacing: 4) {
+                Typography.h1("Heading 1")
+                Typography.lead("A lead paragraph with muted style.")
+                Typography.p("Regular paragraph text.")
+                Typography.code("print(\"hello\")")
+                Typography.muted("Muted small text.")
+            }
+        }
+    }
+
+    @ViewBuilder private var section_aspectRatio: some View {
+        GlassSection(title: "AspectRatio") {
+            AspectRatio(16/9) {
+                Color.blue.opacity(0.2).overlay(Text("16:9")).clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+    }
+
+    @ViewBuilder private var section_table: some View {
+        GlassSection(title: "Table") {
+            Table {
+                TableHeader {
+                    TableRow {
+                        TableHead("Name"); TableHead("Status"); TableHead("Role")
+                    }
+                }
+                TableBody {
+                    TableRow { Text("John").tableCell(); Text("Active").tableCell(); Text("Admin").tableCell() }
+                    TableRow { Text("Jane").tableCell(); Text("Inactive").tableCell(); Text("User").tableCell() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_datePicker: some View {
+        GlassSection(title: "DatePicker") {
+            if #available(iOS 16.0, macOS 13.0, *) {
+                ShadcnDatePicker("Date", selection: $dateValue)
+            }
+        }
+    }
+
+    @ViewBuilder private var section_buttonGroup: some View {
+        GlassSection(title: "ButtonGroup") {
+            VStack(spacing: 8) {
+                ButtonGroup {
+                    Button("One") { }.shadcnButton(variant: .outline, size: .sm)
+                    Button("Two") { }.shadcnButton(variant: .outline, size: .sm)
+                    Button("Three") { }.shadcnButton(variant: .outline, size: .sm)
+                }
+                ButtonGroup(orientation: .vertical) {
+                    Button("Top") { }.shadcnButton(variant: .outline, size: .sm)
+                    Button("Bottom") { }.shadcnButton(variant: .outline, size: .sm)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_inputGroup: some View {
+        GlassSection(title: "InputGroup") {
+            InputGroup {
+                InputGroupAddon(align: .inlineStart) { InputGroupText("$") }
+                Input("Amount", text: .constant(""))
+                InputGroupAddon(align: .inlineEnd) { InputGroupText(".00") }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_bubble: some View {
+        GlassSection(title: "Bubble") {
+            VStack(spacing: 8) {
+                Bubble(align: .start) { BubbleContent("Hello! How can I help?") }
+                Bubble(align: .end) { BubbleContent("I have a question.") }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_message: some View {
+        GlassSection(title: "Message") {
+            VStack(spacing: 12) {
+                Message(align: .start) {
+                    MessageAvatar { Avatar(size: .sm) { AvatarFallback(initials: "JD") } }
+                    MessageContent {
+                        MessageHeader { Text("John").font(.system(size: 13, weight: .medium)); Text("2m ago").font(.system(size: 11)).foregroundStyle(.secondary) }
+                        Bubble(align: .start) { BubbleContent("Hey, how are you?") }
+                    }
+                }
+                Message(align: .end) {
+                    MessageContent {
+                        Bubble(align: .end) { BubbleContent("I'm good, thanks!") }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_attachment: some View {
+        GlassSection(title: "Attachment") {
+            Attachment {
+                AttachmentMedia { Image(systemName: "doc.text.fill").font(.system(size: 24)).foregroundColor(token.primary) }
+                AttachmentContent {
+                    AttachmentTitle("report.pdf")
+                    AttachmentDescription("PDF · 2.4 MB")
+                }
+                AttachmentActions { AttachmentAction {} }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_scrollArea: some View {
+        GlassSection(title: "ScrollArea") {
+            ScrollArea {
+                VStack(spacing: 4) {
+                    ForEach(0..<8, id: \.self) { i in
+                        Text("Scrollable row \(i + 1)").font(.system(size: 14)).padding(8).frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            .frame(height: 120)
+        }
+    }
+
+    @ViewBuilder private var section_navigationMenu: some View {
+        GlassSection(title: "NavigationMenu") {
+            NavigationMenu {
+                NavigationMenuList {
+                    NavigationMenuItem("Home") {}
+                    NavigationMenuItem("Products") {}
+                    NavigationMenuItem("About") {}
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_menubar: some View {
+        GlassSection(title: "Menubar") {
+            Menubar {
+                MenubarMenu("File") {
+                    MenubarItem("New") {}
+                    MenubarItem("Open") {}
+                    MenubarSeparator()
+                    MenubarItem("Quit", variant: .destructive) {}
+                }
+                MenubarMenu("Edit") {
+                    MenubarItem("Copy") {}
+                    MenubarItem("Paste") {}
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_toast: some View {
+        GlassSection(title: "Toast") {
+            VStack(spacing: 8) {
+                Button("Show Success") { toasts.append(ToastItem(title: "Saved", description: "Your changes have been saved.", type: .success)) }.shadcnButton(variant: .outline, size: .sm)
+                Button("Show Error") { toasts.append(ToastItem(title: "Error", description: "Something went wrong.", type: .error)) }.shadcnButton(variant: .outline, size: .sm)
+            }
+            .overlay(alignment: .top) { ToastView(toasts: $toasts) }
+        }
+    }
+
+    @ViewBuilder private var section_command: some View {
+        GlassSection(title: "Command") {
+            CommandDialog {
+                CommandInput(placeholder: "Type a command...", text: .constant(""))
+                CommandList {
+                    CommandGroup(heading: "Actions") {
+                        CommandItem("New File", shortcut: "⌘N") {}
+                        CommandItem("Open...", shortcut: "⌘O") {}
+                        CommandItem("Save", shortcut: "⌘S") {}
+                    }
+                }
             }
         }
     }

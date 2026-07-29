@@ -3,22 +3,6 @@ import SwiftUI
 // MARK: - AlertDialog Modifier
 
 /// A modal confirmation dialog. Corresponds to `<AlertDialog>` in shadcn/ui.
-///
-/// Usage:
-/// ```swift
-/// @State var showConfirm = false
-/// Button("Delete") { showConfirm = true }
-///     .alertDialog(isPresented: $showConfirm, size: .sm) {
-///         AlertDialogHeader {
-///             AlertDialogTitle("Delete Chat")
-///             AlertDialogDescription("This action is permanent.")
-///         }
-///         AlertDialogFooter {
-///             AlertDialogCancel("Cancel") { showConfirm = false }
-///             AlertDialogAction("Delete", variant: .destructive) { showConfirm = false }
-///         }
-///     }
-/// ```
 public struct AlertDialogModifier<CardContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let size: DialogSize
@@ -31,31 +15,32 @@ public struct AlertDialogModifier<CardContent: View>: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-            if isPresented {
-                Color.black.opacity(0.5)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
+        content
+            .fullScreenCover(isPresented: $isPresented) {
+                ZStack {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
 
-                VStack(spacing: 16) {
-                    self.content()
+                    VStack(spacing: 16) {
+                        self.content()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(24)
+                    .background(DesignToken.defaultValue.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(DesignToken.defaultValue.border, lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: size == .sm ? 360 : 440)
+                    .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }
-                .frame(maxWidth: .infinity)
-                .padding(24)
-                .background(DesignToken.defaultValue.card)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(DesignToken.defaultValue.border, lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
-                .padding(.horizontal, 20)
-                .frame(maxWidth: size == .sm ? 360 : 440)
-                .transition(.scale(scale: 0.95).combined(with: .opacity))
+                .animation(.easeInOut(duration: 0.2), value: isPresented)
+                .presentationBackground(.clear)
             }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isPresented)
     }
 }
 

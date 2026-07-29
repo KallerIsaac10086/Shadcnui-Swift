@@ -112,7 +112,55 @@ private func backgroundColor(isPressed: Bool) -> Color {
 .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
 ```
 
-### Step 7：添加 `customStyle` 支持
+### Step 7：添加自定义样式支持
+
+组件应支持**两种**自定义方式：
+
+#### 7a. First-class 参数（替换内部默认值）
+
+用于常用样式的直接覆盖——无副作用，不会双层叠加：
+
+```swift
+public struct MyComponent<Content: View>: View {
+    let cornerRadius: CGFloat?   // nil = 使用默认值
+    let borderWidth: CGFloat?
+    let borderColor: Color?
+    // ...
+}
+
+// usage
+MyComponent(cornerRadius: 24, borderColor: .blue) { ... }
+```
+
+**适用**：圆角 (cornerRadius)、边框 (borderWidth/borderColor)、尺寸 (size)、颜色等。
+
+#### 7b. customStyle 闭包（外层扩展）
+
+用于复杂修饰——在默认样式外层追加：
+
+```swift
+public struct MyComponent<Content: View>: View {
+    let customStyle: ((AnyView) -> AnyView)?
+    // ...
+}
+
+// usage
+MyComponent(customStyle: { view in
+    AnyView(view.shadow(radius: 8))
+}) { ... }
+```
+
+**适用**：阴影 (shadow)、frame、特效等。
+
+#### 选型原则
+
+| 需求 | 使用方式 | 原因 |
+|---|---|---|
+| 圆角、边框、尺寸 | First-class 参数 | 替换内部 clip/border，无双层叠加 |
+| 阴影、frame、特效 | customStyle 闭包 | 外层追加，不干涉内部 |
+| 两者结合 | 混合使用 | `cornerRadius: 24, customStyle: { $0.shadow(...) }` |
+
+### Step 8：提供便捷 Modifier
 
 ```swift
 public struct MyComponent<Content: View>: View {
@@ -138,9 +186,10 @@ public struct MyComponent<Content: View>: View {
 public extension View {
     func shadcnMyComponent(
         variant: MyVariant = .default,
+        cornerRadius: CGFloat? = nil,
         customStyle: ((AnyView) -> AnyView)? = nil
     ) -> some View {
-        self.modifier(MyModifier(variant: variant, customStyle: customStyle))
+        self.modifier(MyModifier(variant: variant, cornerRadius: cornerRadius, customStyle: customStyle))
     }
 }
 ```
@@ -186,9 +235,23 @@ public struct Badge<Label: View>: View {
     @Environment(\.shadcnToken) private var token
     let variant: BadgeVariant
     let label: () -> Label
+    let cornerRadius: CGFloat?   // First-class: override Capsule radius
     let customStyle: ((AnyView) -> AnyView)?
 
+    public init(
+        variant: BadgeVariant = .default,
+        cornerRadius: CGFloat? = nil,
+        customStyle: ((AnyView) -> AnyView)? = nil,
+        @ViewBuilder label: @escaping () -> Label
+    ) {
+        self.variant = variant
+        self.cornerRadius = cornerRadius
+        self.customStyle = customStyle
+        self.label = label
+    }
+
     public var body: some View {
+        let radius = cornerRadius ?? 999  // default = full pill
         let base = AnyView(
             label()
                 .font(.system(size: 12, weight: .semibold))
@@ -196,10 +259,11 @@ public struct Badge<Label: View>: View {
                 .padding(.vertical, 2)
                 .background(bgColor)
                 .foregroundColor(fgColor)
-                .clipShape(Capsule())
+                .clipShape(RoundedRectangle(cornerRadius: radius))
                 .overlay(
                     variant == .outline
-                        ? Capsule().strokeBorder(token.border, lineWidth: 1)
+                        ? RoundedRectangle(cornerRadius: radius)
+                            .strokeBorder(token.border, lineWidth: 1)
                         : nil
                 )
         )
@@ -227,6 +291,12 @@ public struct Badge<Label: View>: View {
         }
     }
 }
+
+// Usage
+Badge(variant: .destructive, cornerRadius: 8) {
+    Text("NEW")
+}
+```
 ```
 
 ## 常见陷阱

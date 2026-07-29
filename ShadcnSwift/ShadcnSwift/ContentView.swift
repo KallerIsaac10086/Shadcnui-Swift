@@ -68,6 +68,95 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 20)
 
+                // Section: Custom Styled Buttons
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Custom Styled Buttons (like shadcn className)")
+                        .font(.headline)
+
+                    HStack(spacing: 8) {
+                        Text("Rounded")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Button("Pill") { }
+                            .shadcnButton(variant: .default) { label in
+                                AnyView(label.cornerRadius(999))
+                            }
+                    }
+
+                    HStack(spacing: 8) {
+                        Text("Full width")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Button("Wide Button") { }
+                            .shadcnButton(variant: .outline) { label in
+                                AnyView(label.frame(maxWidth: .infinity))
+                            }
+                    }
+
+                    HStack(spacing: 8) {
+                        Text("Shadow")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Button("Glow") { }
+                            .shadcnButton(variant: .default) { label in
+                                AnyView(
+                                    label.shadow(color: currentTheme.light.primary.opacity(0.4), radius: 8, y: 4)
+                                )
+                            }
+                    }
+                }
+                .padding(.horizontal, 20)
+
+                // Section: Custom Styled Card
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Custom Styled Card")
+                        .font(.headline)
+                        .padding(.horizontal, 20)
+
+                    Card(customStyle: { card in
+                        AnyView(
+                            card
+                                .background(Color.blue.opacity(0.08))
+                                .cornerRadius(24)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .strokeBorder(currentTheme.light.primary.opacity(0.3), lineWidth: 2)
+                                )
+                        )
+                    }) {
+                        CardHeader {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    CardTitle("Premium Plan", customStyle: { title in
+                                        AnyView(
+                                            title
+                                                .font(.system(size: 20, weight: .bold))
+                                                .foregroundColor(currentTheme.light.primary)
+                                        )
+                                    })
+                                    CardDescription("Custom styled with className-like API")
+                                }
+                                Spacer()
+                            }
+                        }
+                        CardContent {
+                            Text("This card uses `customStyle` closures on both Card and CardTitle — the SwiftUI equivalent of shadcn/ui's `className` prop.")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                        }
+                        CardFooter {
+                            Button("Learn More") { }
+                                .shadcnButton(variant: .default, size: .sm) { label in
+                                    AnyView(label.cornerRadius(999))
+                                }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+
                 // Section: Card
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Card")

@@ -27,6 +27,9 @@ public enum ButtonSize: String, CaseIterable, Sendable {
 // MARK: - Button Style
 
 /// The SwiftUI ButtonStyle that maps variant + size to visual appearance.
+///
+/// Supports custom styling via `labelModifier` — mirrors shadcn/ui's `className` prop.
+/// Custom modifiers are applied **after** defaults, so they naturally override.
 public struct ShadcnButtonStyle: ButtonStyle {
     @Environment(\.shadcnToken) private var token
     @Environment(\.isEnabled) private var isEnabled
@@ -34,23 +37,39 @@ public struct ShadcnButtonStyle: ButtonStyle {
     let variant: ButtonVariant
     let size: ButtonSize
 
-    public init(variant: ButtonVariant = .default, size: ButtonSize = .default) {
+    /// Optional closure to customize the styled label.
+    /// Applied after all default styles — mimics shadcn/ui `cn(defaults, className)`.
+    let labelModifier: ((AnyView) -> AnyView)?
+
+    public init(
+        variant: ButtonVariant = .default,
+        size: ButtonSize = .default,
+        labelModifier: ((AnyView) -> AnyView)? = nil
+    ) {
         self.variant = variant
         self.size = size
+        self.labelModifier = labelModifier
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(font)
-            .frame(height: height)
-            .padding(.horizontal, horizontalPadding)
-            .background(backgroundColor(isPressed: configuration.isPressed))
-            .foregroundColor(foregroundColor)
-            .overlay(borderOverlay)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .opacity(isEnabled ? 1.0 : 0.5)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+        let base = AnyView(
+            configuration.label
+                .font(font)
+                .frame(height: height)
+                .padding(.horizontal, horizontalPadding)
+                .background(backgroundColor(isPressed: configuration.isPressed))
+                .foregroundColor(foregroundColor)
+                .overlay(borderOverlay)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .opacity(isEnabled ? 1.0 : 0.5)
+                .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+                .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+        )
+
+        if let modifier = labelModifier {
+            return modifier(base)
+        }
+        return base
     }
 
     // MARK: - Size Computations
@@ -152,30 +171,38 @@ public struct ShadcnButtonStyle: ButtonStyle {
 ///
 /// Usage:
 /// ```swift
-/// Button("Click me") { action() }
-///     .shadcnButton(variant: .outline, size: .lg)
+/// // Basic
+/// ShadcnButton("Click me") { action() }
+///
+/// // With custom style (like shadcn/ui className)
+/// ShadcnButton("Delete", variant: .destructive) { action() } customStyle: { label in
+///     AnyView(label.cornerRadius(20).frame(maxWidth: .infinity))
+/// }
 /// ```
 public struct ShadcnButton<Label: View>: View {
     let variant: ButtonVariant
     let size: ButtonSize
     let action: () -> Void
     let label: () -> Label
+    let customStyle: ((AnyView) -> AnyView)?
 
     public init(
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
         action: @escaping () -> Void,
+        customStyle: ((AnyView) -> AnyView)? = nil,
         @ViewBuilder label: @escaping () -> Label
     ) {
         self.variant = variant
         self.size = size
         self.action = action
         self.label = label
+        self.customStyle = customStyle
     }
 
     public var body: some View {
         Button(action: action, label: label)
-            .buttonStyle(ShadcnButtonStyle(variant: variant, size: size))
+            .buttonStyle(ShadcnButtonStyle(variant: variant, size: size, labelModifier: customStyle))
     }
 }
 
@@ -183,8 +210,22 @@ public struct ShadcnButton<Label: View>: View {
 
 public extension View {
     /// Apply shadcn button styling to any Button or tappable view.
-    func shadcnButton(variant: ButtonVariant = .default, size: ButtonSize = .default) -> some View {
-        self.buttonStyle(ShadcnButtonStyle(variant: variant, size: size))
+    ///
+    /// The optional `customStyle` closure receives the fully-styled label and lets you
+    /// apply additional / overriding modifiers — the SwiftUI analog of shadcn/ui's `className`.
+    ///
+    /// ```swift
+    /// Button("Delete") { }
+    ///     .shadcnButton(variant: .destructive, size: .lg) { label in
+    ///         AnyView(label.cornerRadius(20).frame(maxWidth: .infinity))
+    ///     }
+    /// ```
+    func shadcnButton(
+        variant: ButtonVariant = .default,
+        size: ButtonSize = .default,
+        customStyle: ((AnyView) -> AnyView)? = nil
+    ) -> some View {
+        self.buttonStyle(ShadcnButtonStyle(variant: variant, size: size, labelModifier: customStyle))
     }
 }
 
@@ -195,9 +236,10 @@ public extension ShadcnButton where Label == Text {
         _ title: String,
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
-        action: @escaping () -> Void
+        action: @escaping () -> Void,
+        customStyle: ((AnyView) -> AnyView)? = nil
     ) {
-        self.init(variant: variant, size: size, action: action) {
+        self.init(variant: variant, size: size, action: action, customStyle: customStyle) {
             Text(title)
         }
     }

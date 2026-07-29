@@ -151,7 +151,7 @@ public struct ShadcnButtonStyle: ButtonStyle {
         case .secondary:
             return token.secondaryForeground
         case .destructive:
-            return .white
+            return token.destructiveForeground
         case .link:
             return token.primary
         }

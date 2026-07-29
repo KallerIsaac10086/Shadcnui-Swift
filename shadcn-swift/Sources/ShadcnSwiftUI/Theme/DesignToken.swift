@@ -35,6 +35,24 @@ public struct DesignToken: Sendable {
 
     // Destructive
     public let destructive: Color
+    public let destructiveForeground: Color
+
+    // Sidebar
+    public let sidebar: Color
+    public let sidebarForeground: Color
+    public let sidebarPrimary: Color
+    public let sidebarPrimaryForeground: Color
+    public let sidebarAccent: Color
+    public let sidebarAccentForeground: Color
+    public let sidebarBorder: Color
+    public let sidebarRing: Color
+
+    // Chart
+    public let chart1: Color
+    public let chart2: Color
+    public let chart3: Color
+    public let chart4: Color
+    public let chart5: Color
 
     // Borders
     public let border: Color
@@ -60,6 +78,20 @@ public struct DesignToken: Sendable {
         accent: Color,
         accentForeground: Color,
         destructive: Color,
+        destructiveForeground: Color = .white,
+        sidebar: Color = .clear,
+        sidebarForeground: Color = .clear,
+        sidebarPrimary: Color = .clear,
+        sidebarPrimaryForeground: Color = .clear,
+        sidebarAccent: Color = .clear,
+        sidebarAccentForeground: Color = .clear,
+        sidebarBorder: Color = .clear,
+        sidebarRing: Color = .clear,
+        chart1: Color = .clear,
+        chart2: Color = .clear,
+        chart3: Color = .clear,
+        chart4: Color = .clear,
+        chart5: Color = .clear,
         border: Color,
         input: Color,
         ring: Color,
@@ -80,6 +112,20 @@ public struct DesignToken: Sendable {
         self.accent = accent
         self.accentForeground = accentForeground
         self.destructive = destructive
+        self.destructiveForeground = destructiveForeground
+        self.sidebar = sidebar
+        self.sidebarForeground = sidebarForeground
+        self.sidebarPrimary = sidebarPrimary
+        self.sidebarPrimaryForeground = sidebarPrimaryForeground
+        self.sidebarAccent = sidebarAccent
+        self.sidebarAccentForeground = sidebarAccentForeground
+        self.sidebarBorder = sidebarBorder
+        self.sidebarRing = sidebarRing
+        self.chart1 = chart1
+        self.chart2 = chart2
+        self.chart3 = chart3
+        self.chart4 = chart4
+        self.chart5 = chart5
         self.border = border
         self.input = input
         self.ring = ring

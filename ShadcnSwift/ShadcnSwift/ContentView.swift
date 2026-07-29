@@ -25,11 +25,17 @@ struct ContentView: View {
         switch selectedTheme {
         case "neutral": return Themes.neutral
         case "stone":   return Themes.stone
+        case "red":     return Themes.red
         case "rose":    return Themes.rose
         case "orange":  return Themes.orange
+        case "yellow":  return Themes.yellow
         case "green":   return Themes.green
+        case "teal":    return Themes.teal
         case "blue":    return Themes.blue
+        case "indigo":  return Themes.indigo
         case "violet":  return Themes.violet
+        case "purple":  return Themes.purple
+        case "pink":    return Themes.pink
         default:        return Themes.zinc
         }
     }
@@ -46,11 +52,17 @@ struct ThemePicker: View {
                 Text("Zinc").tag("zinc")
                 Text("Neutral").tag("neutral")
                 Text("Stone").tag("stone")
+                Text("Red").tag("red")
                 Text("Rose").tag("rose")
                 Text("Orange").tag("orange")
+                Text("Yellow").tag("yellow")
                 Text("Green").tag("green")
+                Text("Teal").tag("teal")
                 Text("Blue").tag("blue")
+                Text("Indigo").tag("indigo")
                 Text("Violet").tag("violet")
+                Text("Purple").tag("purple")
+                Text("Pink").tag("pink")
             }
             .pickerStyle(.menu)
         }
@@ -146,6 +158,9 @@ struct ComponentList: View {
                     section_attachment; section_scrollArea
                     section_navigationMenu; section_menubar
                     section_toast; section_command
+                    section_inputOTP; section_marker
+                    section_messageScroller; section_resizable
+                    section_direction; section_toggleGroup
                 }
                 .frame(maxWidth: 976)
 
@@ -859,6 +874,67 @@ struct ComponentList: View {
             }
         }
     }
+
+    @ViewBuilder private var section_inputOTP: some View {
+        GlassSection(title: "InputOTP") {
+            InputOTP(code: .constant("1234"), length: 4)
+        }
+    }
+
+    @ViewBuilder private var section_marker: some View {
+        GlassSection(title: "Marker") {
+            VStack(spacing: 8) {
+                Marker("Today", variant: .separator)
+                Marker("System: switched branch", variant: .border)
+                Marker("Thinking...")
+            }
+        }
+    }
+
+    @ViewBuilder private var section_messageScroller: some View {
+        GlassSection(title: "MessageScroller") {
+            MessageScroller {
+                Message(align: .start) {
+                    MessageContent {
+                        MessageHeader { Text("System").font(.system(size: 13, weight: .medium)) }
+                        Bubble(align: .start) { BubbleContent("Auto-scroll to bottom on new messages.") }
+                    }
+                }
+            }
+            .frame(height: 120)
+        }
+    }
+
+    @ViewBuilder private var section_resizable: some View {
+        GlassSection(title: "Resizable") {
+            ResizablePanelGroup(orientation: .horizontal) {
+                ResizablePanel(minSize: 80) {
+                    Text("Left").font(.system(size: 14)).frame(maxWidth: .infinity, maxHeight: .infinity).background(token.muted).clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                ResizableHandle()
+                ResizablePanel { Text("Right").font(.system(size: 14)).frame(maxWidth: .infinity, maxHeight: .infinity).background(token.muted.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 6)) }
+            }
+            .frame(height: 80)
+        }
+    }
+
+    @ViewBuilder private var section_direction: some View {
+        GlassSection(title: "Direction") {
+            DirectionProvider(direction: .rtl) {
+                Text("RTL text example").font(.system(size: 14))
+            }
+        }
+    }
+
+    @ViewBuilder private var section_toggleGroup: some View {
+        GlassSection(title: "ToggleGroup") {
+            HStack(spacing: 8) {
+                ShadcnToggle(isPressed: .constant(true)) { Image(systemName: "bold").frame(width: 14) }
+                ShadcnToggle(isPressed: .constant(false)) { Image(systemName: "italic").frame(width: 14) }
+                ShadcnToggle(isPressed: .constant(true)) { Image(systemName: "underline").frame(width: 14) }
+            }
+        }
+    }
 }
 
 // MARK: - Tab 2: Customizer
@@ -885,11 +961,17 @@ struct Customizer: View {
         switch selectedTheme {
         case "neutral": return Themes.neutral
         case "stone":   return Themes.stone
+        case "red":     return Themes.red
         case "rose":    return Themes.rose
         case "orange":  return Themes.orange
+        case "yellow":  return Themes.yellow
         case "green":   return Themes.green
+        case "teal":    return Themes.teal
         case "blue":    return Themes.blue
+        case "indigo":  return Themes.indigo
         case "violet":  return Themes.violet
+        case "purple":  return Themes.purple
+        case "pink":    return Themes.pink
         default:        return Themes.zinc
         }
     }

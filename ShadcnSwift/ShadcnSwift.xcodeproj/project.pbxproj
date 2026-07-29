@@ -626,7 +626,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		5BBF6BF63018AD4700D4C50B /* XCLocalSwiftPackageReference "../shadcn-swift" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../shadcn-swift";
+			relativePath = "..";
 		};
 /* End XCLocalSwiftPackageReference section */
 

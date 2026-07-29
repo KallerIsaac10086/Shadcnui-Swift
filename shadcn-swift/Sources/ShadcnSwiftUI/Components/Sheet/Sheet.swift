@@ -15,8 +15,9 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     @ViewBuilder let sheet: () -> SheetContent
 
     public func body(content: Content) -> some View {
-        content
-            .fullScreenCover(isPresented: $isPresented) {
+        ZStack {
+            content
+            if isPresented {
                 ZStack(alignment: frameAlignment) {
                     Color.black.opacity(0.5)
                         .ignoresSafeArea()
@@ -27,8 +28,9 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
                         .transition(slideTransition)
                 }
                 .animation(.easeInOut(duration: 0.25), value: isPresented)
-                .presentationBackground(.clear)
             }
+        }
+        .animation(.easeInOut(duration: 0.25), value: isPresented)
     }
 
     private var frameAlignment: Alignment {

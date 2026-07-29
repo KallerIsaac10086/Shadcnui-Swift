@@ -4,8 +4,6 @@ import SwiftUI
 
 /// A shadcn/ui-style slider for selecting a value from a range.
 ///
-/// Corresponds to `<Slider>` in shadcn/ui.
-///
 /// Usage:
 /// ```swift
 /// @State var volume = 0.5
@@ -34,41 +32,32 @@ public struct Slider: View {
             let thumbD: CGFloat = 20
             let trackH: CGFloat = 4
             let halfThumb = thumbD / 2
-            let available = geo.size.width - thumbD
+            let available = max(geo.size.width - thumbD, 1)
             let fraction = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
             let clampedFraction = min(max(fraction, 0), 1)
             let thumbX = halfThumb + available * clampedFraction
 
             ZStack(alignment: .leading) {
-                // Track background
-                Capsule()
-                    .fill(token.muted)
-                    .frame(height: trackH)
-
-                // Filled portion
-                Capsule()
-                    .fill(token.primary)
-                    .frame(width: max(0, thumbX), height: trackH)
-
-                // Thumb
+                Capsule().fill(token.muted).frame(height: trackH)
+                Capsule().fill(token.primary).frame(width: max(0, thumbX), height: trackH)
                 Circle()
                     .fill(token.background)
                     .overlay(Circle().strokeBorder(token.primary, lineWidth: 2))
                     .shadow(color: .black.opacity(0.1), radius: 2, y: 1)
                     .frame(width: thumbD, height: thumbD)
                     .offset(x: thumbX - halfThumb)
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { g in
-                                let raw = Double((g.location.x - halfThumb) / available)
-                                let clamped = min(max(raw, 0), 1)
-                                let newValue = range.lowerBound + clamped * (range.upperBound - range.lowerBound)
-                                value = applyStep(newValue)
-                            }
-                    )
             }
-            .frame(height: max(thumbD, 40))
-            .padding(.horizontal, halfThumb)
+            .frame(height: thumbD)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { g in
+                        let raw = Double((g.location.x - halfThumb) / available)
+                        let clamped = min(max(raw, 0), 1)
+                        let newValue = range.lowerBound + clamped * (range.upperBound - range.lowerBound)
+                        value = applyStep(newValue)
+                    }
+            )
         }
         .frame(height: 44)
         .opacity(isEnabled ? 1 : 0.5)

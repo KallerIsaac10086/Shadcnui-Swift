@@ -3,66 +3,42 @@ import SwiftUI
 // MARK: - Dialog Size
 
 public enum DialogSize: Sendable {
-    case sm
-    case md
-    case lg
-    case xl
-    case full
+    case sm, md, lg, xl, full
 }
 
-// MARK: - Dialog
+// MARK: - Dialog Overlay Modifier
 
 /// A modal dialog. Corresponds to `<Dialog>` in shadcn/ui.
-///
-/// Presents as a centered overlay with fade + zoom animation.
-///
-/// Usage:
-/// ```swift
-/// @State var showDialog = false
-///
-/// Button("Open") { showDialog = true }
-///     .dialog(isPresented: $showDialog) {
-///         DialogContent(size: .sm) {
-///             DialogHeader {
-///                 DialogTitle("Title")
-///                 DialogDescription("Description")
-///             }
-///             DialogFooter {
-///                 Button("Cancel") { showDialog = false }
-///                     .shadcnButton(variant: .outline)
-///                 Button("OK") { showDialog = false }
-///                     .shadcnButton()
-///             }
-///         }
-///     }
-/// ```
 public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     @ViewBuilder let dialog: () -> DialogContent
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-            if isPresented {
-                Color.black.opacity(0.5)
-                    .ignoresSafeArea()
-                    .onTapGesture { dismiss() }
-                    .transition(.opacity)
+        content
+            .overlay {
+                if isPresented {
+                    ZStack {
+                        Color.black.opacity(0.5)
+                            .ignoresSafeArea()
+                            .onTapGesture { dismiss() }
+                            .transition(.opacity)
 
-                dialog()
-                    .transition(.scale(scale: 0.95).combined(with: .opacity))
+                        dialog()
+                            .transition(.scale(scale: 0.95).combined(with: .opacity))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
+                    .animation(.easeInOut(duration: 0.2), value: isPresented)
+                }
             }
-        }
-        .animation(.easeInOut(duration: 0.15), value: isPresented)
     }
 
     private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.15)) { isPresented = false }
+        withAnimation(.easeInOut(duration: 0.2)) { isPresented = false }
     }
 }
 
 public extension View {
-    /// Presents a shadcn-styled dialog overlay.
     func dialog<Content: View>(
         isPresented: Binding<Bool>,
         @ViewBuilder content: @escaping () -> Content
@@ -103,8 +79,8 @@ public struct DialogContent<Content: View>: View {
             RoundedRectangle(cornerRadius: token.radius * 1.5)
                 .strokeBorder(token.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.15), radius: 16, y: 4)
-        .padding(.horizontal, 16)
+        .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
+        .padding(.horizontal, 24)
     }
 
     private var maxWidth: CGFloat? {
@@ -118,71 +94,34 @@ public struct DialogContent<Content: View>: View {
     }
 }
 
-// MARK: - DialogHeader
+// MARK: - Sub-components
 
 public struct DialogHeader<Content: View>: View {
     @ViewBuilder let content: () -> Content
-
-    public init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            content()
-        }
-    }
+    public init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+    public var body: some View { VStack(alignment: .leading, spacing: 6) { content() } }
 }
-
-// MARK: - DialogTitle
 
 public struct DialogTitle: View {
     @Environment(\.shadcnToken) private var token
-
     let text: String
-
-    public init(_ text: String) {
-        self.text = text
-    }
-
+    public init(_ text: String) { self.text = text }
     public var body: some View {
-        Text(text)
-            .font(.system(size: 18, weight: .semibold))
-            .foregroundColor(token.foreground)
+        Text(text).font(.system(size: 18, weight: .semibold)).foregroundColor(token.foreground)
     }
 }
-
-// MARK: - DialogDescription
 
 public struct DialogDescription: View {
     @Environment(\.shadcnToken) private var token
-
     let text: String
-
-    public init(_ text: String) {
-        self.text = text
-    }
-
+    public init(_ text: String) { self.text = text }
     public var body: some View {
-        Text(text)
-            .font(.system(size: 14))
-            .foregroundColor(token.mutedForeground)
+        Text(text).font(.system(size: 14)).foregroundColor(token.mutedForeground)
     }
 }
 
-// MARK: - DialogFooter
-
 public struct DialogFooter<Content: View>: View {
     @ViewBuilder let content: () -> Content
-
-    public init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
-
-    public var body: some View {
-        HStack(spacing: 8) {
-            Spacer()
-            content()
-        }
-    }
+    public init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+    public var body: some View { HStack(spacing: 8) { Spacer(); content() } }
 }

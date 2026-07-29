@@ -77,7 +77,10 @@ public struct DropdownMenuItem: View {
 
 // MARK: - DropdownMenuSeparator
 
-public struct DropdownMenuSeparator: View { public init() {} public var body: some View { Divider() } }
+public struct DropdownMenuSeparator: View {
+    public init() {}
+    public var body: some View { Divider() }
+}
 
 // MARK: - DropdownMenuShortcut
 

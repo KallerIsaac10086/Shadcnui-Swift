@@ -65,4 +65,7 @@ public struct MenubarItem: View {
     }
 }
 
-public struct MenubarSeparator: View { public init() {} public var body: some View { Divider() } }
+public struct MenubarSeparator: View {
+    public init() {}
+    public var body: some View { Divider() }
+}

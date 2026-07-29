@@ -24,7 +24,9 @@ public struct Carousel<Content: View>: View {
         TabView(selection: $currentIndex) {
             content()
         }
+        #if !os(macOS)
         .tabViewStyle(.page(indexDisplayMode: .automatic))
+        #endif
     }
 }
 

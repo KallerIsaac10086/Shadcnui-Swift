@@ -51,4 +51,7 @@ public struct ContextMenuItem: View {
 
 // MARK: - ContextMenuSeparator
 
-public struct ContextMenuSeparator: View { public init() {} public var body: some View { Divider() } }
+public struct ContextMenuSeparator: View {
+    public init() {}
+    public var body: some View { Divider() }
+}

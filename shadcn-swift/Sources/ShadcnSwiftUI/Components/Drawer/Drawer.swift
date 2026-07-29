@@ -17,10 +17,10 @@ import SwiftUI
 ///         }
 ///     }
 /// ```
-public struct DrawerModifier<Content: View>: ViewModifier {
+public struct DrawerModifier<DrawerContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let snapPoints: [CGFloat]
-    @ViewBuilder let drawer: () -> Content
+    @ViewBuilder let drawer: () -> DrawerContent
 
     @State private var dragOffset: CGFloat = 0
 
@@ -52,7 +52,7 @@ public struct DrawerModifier<Content: View>: ViewModifier {
                         )
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: UIScreen.main.bounds.height * (snapPoints.last ?? 0.5))
+                .frame(height: screenHeight * (snapPoints.last ?? 0.5))
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .transition(.move(edge: .bottom))
@@ -63,6 +63,14 @@ public struct DrawerModifier<Content: View>: ViewModifier {
 
     private func dismiss() {
         withAnimation(.easeInOut(duration: 0.2)) { isPresented = false; dragOffset = 0 }
+    }
+
+    private var screenHeight: CGFloat {
+        #if os(macOS)
+        NSScreen.main?.frame.height ?? 800
+        #else
+        UIScreen.main.bounds.height
+        #endif
     }
 }
 

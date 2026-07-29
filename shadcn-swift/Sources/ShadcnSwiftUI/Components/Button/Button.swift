@@ -36,6 +36,7 @@ public struct ShadcnButtonStyle: ButtonStyle {
 
     let variant: ButtonVariant
     let size: ButtonSize
+    let cornerRadius: CGFloat?
 
     /// Optional closure to customize the styled label.
     /// Applied after all default styles — mimics shadcn/ui `cn(defaults, className)`.
@@ -44,10 +45,12 @@ public struct ShadcnButtonStyle: ButtonStyle {
     public init(
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
+        cornerRadius: CGFloat? = nil,
         labelModifier: ((AnyView) -> AnyView)? = nil
     ) {
         self.variant = variant
         self.size = size
+        self.cornerRadius = cornerRadius
         self.labelModifier = labelModifier
     }
 
@@ -60,7 +63,7 @@ public struct ShadcnButtonStyle: ButtonStyle {
                 .background(backgroundColor(isPressed: configuration.isPressed))
                 .foregroundColor(foregroundColor)
                 .overlay(borderOverlay)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius_))
                 .opacity(isEnabled ? 1.0 : 0.5)
                 .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
                 .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
@@ -109,7 +112,8 @@ public struct ShadcnButtonStyle: ButtonStyle {
         }
     }
 
-    private var cornerRadius: CGFloat {
+    private var cornerRadius_: CGFloat {
+        if let cornerRadius { return cornerRadius }
         switch size {
         case .icon, .iconXs, .iconSm, .iconLg:
             return height / 2  // Fully rounded for icon buttons
@@ -157,7 +161,7 @@ public struct ShadcnButtonStyle: ButtonStyle {
     private var borderOverlay: some View {
         switch variant {
         case .outline:
-            RoundedRectangle(cornerRadius: cornerRadius)
+            RoundedRectangle(cornerRadius: cornerRadius_)
                 .strokeBorder(token.border, lineWidth: 1)
         default:
             EmptyView()
@@ -182,6 +186,7 @@ public struct ShadcnButtonStyle: ButtonStyle {
 public struct ShadcnButton<Label: View>: View {
     let variant: ButtonVariant
     let size: ButtonSize
+    let cornerRadius: CGFloat?
     let action: () -> Void
     let label: () -> Label
     let customStyle: ((AnyView) -> AnyView)?
@@ -189,12 +194,14 @@ public struct ShadcnButton<Label: View>: View {
     public init(
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
+        cornerRadius: CGFloat? = nil,
         action: @escaping () -> Void,
         customStyle: ((AnyView) -> AnyView)? = nil,
         @ViewBuilder label: @escaping () -> Label
     ) {
         self.variant = variant
         self.size = size
+        self.cornerRadius = cornerRadius
         self.action = action
         self.label = label
         self.customStyle = customStyle
@@ -202,7 +209,7 @@ public struct ShadcnButton<Label: View>: View {
 
     public var body: some View {
         Button(action: action, label: label)
-            .buttonStyle(ShadcnButtonStyle(variant: variant, size: size, labelModifier: customStyle))
+            .buttonStyle(ShadcnButtonStyle(variant: variant, size: size, cornerRadius: cornerRadius, labelModifier: customStyle))
     }
 }
 
@@ -223,9 +230,10 @@ public extension View {
     func shadcnButton(
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
+        cornerRadius: CGFloat? = nil,
         customStyle: ((AnyView) -> AnyView)? = nil
     ) -> some View {
-        self.buttonStyle(ShadcnButtonStyle(variant: variant, size: size, labelModifier: customStyle))
+        self.buttonStyle(ShadcnButtonStyle(variant: variant, size: size, cornerRadius: cornerRadius, labelModifier: customStyle))
     }
 }
 
@@ -236,10 +244,11 @@ public extension ShadcnButton where Label == Text {
         _ title: String,
         variant: ButtonVariant = .default,
         size: ButtonSize = .default,
+        cornerRadius: CGFloat? = nil,
         action: @escaping () -> Void,
         customStyle: ((AnyView) -> AnyView)? = nil
     ) {
-        self.init(variant: variant, size: size, action: action, customStyle: customStyle) {
+        self.init(variant: variant, size: size, cornerRadius: cornerRadius, action: action, customStyle: customStyle) {
             Text(title)
         }
     }

@@ -24,7 +24,9 @@ public struct PopoverModifier<PopoverContent: View>: ViewModifier {
             .overlay(alignment: .bottom) {
                 if isPresented {
                     popover()
+                        .fixedSize(horizontal: true, vertical: false)
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
+                        .offset(y: 8)
                 }
             }
             .animation(.easeInOut(duration: 0.15), value: isPresented)

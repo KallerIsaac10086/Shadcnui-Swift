@@ -76,12 +76,15 @@ struct ComponentList: View {
     @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
 
-    @State private var switchDefault = false, switchSm = false
+    @State private var switchDefault = false
+    @State private var switchSm = false
     @State private var inputText = ""
     @State private var textareaText = ""
-    @State private var checkbox1 = false, checkbox2 = true
+    @State private var checkbox1 = false
+    @State private var checkbox2 = true
     @State private var radioSelection = "a"
-    @State private var toggleBold = false, toggleItalic = true
+    @State private var toggleBold = false
+    @State private var toggleItalic = true
 
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
@@ -174,18 +177,17 @@ struct ComponentList: View {
     @ViewBuilder private var section_switch: some View {
         GlassSection(title: "Switch") {
             HStack(spacing: 24) {
-                switch_item(title: "default", isOn: true, style: .shadcnSwitch)
-                switch_item(title: "sm", isOn: false, style: ShadcnSwitchStyle(size: .sm))
+                switch_item(title: "default", isOn: $switchDefault, style: .shadcnSwitch)
+                switch_item(title: "sm", isOn: $switchSm, style: ShadcnSwitchStyle(size: .sm))
             }
         }
     }
 
-    private func switch_item(title: String, isOn: Bool, style: some ToggleStyle) -> some View {
+    private func switch_item(title: String, isOn: Binding<Bool>, style: some ToggleStyle) -> some View {
         VStack(spacing: 4) {
-            Toggle("", isOn: .constant(isOn))
+            Toggle("", isOn: isOn)
                 .toggleStyle(style)
                 .labelsHidden()
-                .allowsHitTesting(false)
             Text(title)
                 .font(.caption2)
                 .foregroundStyle(.secondary)

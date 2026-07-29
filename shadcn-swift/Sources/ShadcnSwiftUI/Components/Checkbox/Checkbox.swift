@@ -35,7 +35,7 @@ public struct Checkbox: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .frame(width: 16, height: 16)
         .opacity(isEnabled ? 1 : 0.5)
     }

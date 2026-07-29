@@ -29,8 +29,8 @@ public struct RadioGroup<Content: View, Value: Hashable>: View {
 
 // MARK: - Radio Helper
 
-struct RadioSelection {
-    let select: (AnyHashable) -> Void
+struct RadioSelection: Sendable {
+    let select: @Sendable (AnyHashable) -> Void
 }
 
 struct RadioGroupSelectionKey: EnvironmentKey {
@@ -38,7 +38,7 @@ struct RadioGroupSelectionKey: EnvironmentKey {
 }
 
 struct RadioGroupValueKey: EnvironmentKey {
-    static let defaultValue: AnyHashable = ""
+    nonisolated(unsafe) static let defaultValue: AnyHashable = ""
 }
 
 extension EnvironmentValues {
@@ -69,7 +69,7 @@ public struct RadioItem<Value: Hashable>: View {
         self.value = value
     }
 
-    private var isSelected: Bool { groupValue == value }
+    private var isSelected: Bool { (groupValue.base as? Value) == value }
 
     public var body: some View {
         Button {
@@ -94,7 +94,7 @@ public struct RadioItem<Value: Hashable>: View {
                 Text(label).font(.system(size: 14)).foregroundColor(token.foreground)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .opacity(isEnabled ? 1 : 0.5)
     }
 }

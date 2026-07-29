@@ -76,189 +76,172 @@ struct ComponentList: View {
     @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
 
+    private let columns = [
+        GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
+    ]
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 ThemePicker(selectedTheme: $selectedTheme)
+                    .frame(maxWidth: 480)
 
-                GlassSection(title: "Button Variants") {
-                    ForEach(ButtonVariant.allCases, id: \.rawValue) { variant in
-                        HStack(spacing: 8) {
-                            Text(variant.rawValue.capitalized)
-                                .font(.caption)
-                                .frame(width: 80, alignment: .leading)
-                                .foregroundStyle(.secondary)
-                            Button("Button") { }
-                                .shadcnButton(variant: variant)
-                        }
-                    }
+                LazyVGrid(columns: columns, spacing: 16) {
+                    section_buttons
+                    section_badge
+                    section_input
+                    section_switch
+                    section_separator
+                    section_avatar
+                    section_card
                 }
-
-                GlassSection(title: "Button Sizes") {
-                    ForEach(ButtonSize.allCases, id: \.rawValue) { size in
-                        HStack(spacing: 8) {
-                            Text(size.rawValue)
-                                .font(.caption)
-                                .frame(width: 80, alignment: .leading)
-                                .foregroundStyle(.secondary)
-                            Button("Button") { }
-                                .shadcnButton(size: size)
-                        }
-                    }
-                }
-
-                GlassSection(title: "Card") {
-                    Card {
-                        CardHeader {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    CardTitle("Notifications")
-                                    CardDescription("You have 3 unread messages.")
-                                }
-                                Spacer()
-                                Button { } label: {
-                                    Image(systemName: "bell.badge")
-                                }
-                                .shadcnButton(variant: .ghost, size: .iconSm)
-                            }
-                        }
-                        CardContent {
-                            Text("Your subscription renews on August 1, 2026.")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
-                        }
-                        CardFooter {
-                            Button("Dismiss") { }
-                                .shadcnButton(variant: .outline, size: .sm)
-                            Button("View All") { }
-                                .shadcnButton(variant: .default, size: .sm)
-                        }
-                    }
-                }
-
-                // ── Badge ──
-                GlassSection(title: "Badge") {
-                    VStack(spacing: 10) {
-                        ForEach(BadgeVariant.allCases, id: \.rawValue) { variant in
-                            HStack(spacing: 8) {
-                                Text(variant.rawValue.capitalized)
-                                    .font(.caption)
-                                    .frame(width: 80, alignment: .leading)
-                                    .foregroundStyle(.secondary)
-                                Badge(variant: variant) {
-                                    HStack(spacing: 3) {
-                                        if variant == .destructive || variant == .outline {
-                                            Image(systemName: "xmark")
-                                        }
-                                        Text(variant.rawValue.capitalized)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // ── Input ──
-                GlassSection(title: "Input") {
-                    VStack(spacing: 10) {
-                        InputStateDemo()
-                        Input("Disabled input", text: .constant("Can't edit"))
-                            .disabled(true)
-                        Input("Invalid input", text: .constant("Bad value"), isInvalid: true)
-                    }
-                }
-                .environment(\.shadcnToken, token)
-
-                // ── Switch ──
-                GlassSection(title: "Switch") {
-                    HStack(spacing: 24) {
-                        VStack(spacing: 4) {
-                            Text("default")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                            Toggle("", isOn: .constant(true))
-                                .toggleStyle(.shadcnSwitch)
-                                .labelsHidden()
-                        }
-                        VStack(spacing: 4) {
-                            Text("sm")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                            Toggle("", isOn: .constant(false))
-                                .toggleStyle(ShadcnSwitchStyle(size: .sm))
-                                .labelsHidden()
-                        }
-                    }
-                }
-
-                // ── Separator ──
-                GlassSection(title: "Separator") {
-                    VStack(spacing: 12) {
-                        Text("Above separator")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Separator()
-                        Text("Below separator")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        HStack(spacing: 12) {
-                            Text("Left")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                            Separator(orientation: .vertical)
-                                .frame(height: 24)
-                            Text("Right")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                // ── Avatar ──
-                GlassSection(title: "Avatar") {
-                    VStack(spacing: 16) {
-                        // Sizes
-                        HStack(spacing: 12) {
-                            Avatar(size: .sm) {
-                                AvatarFallback(initials: "S")
-                            }
-                            Avatar(size: .default) {
-                                AvatarFallback(initials: "M")
-                            }
-                            Avatar(size: .lg) {
-                                AvatarFallback(initials: "L")
-                            }
-                        }
-
-                        // With badge
-                        HStack(spacing: 8) {
-                            ZStack(alignment: .bottomTrailing) {
-                                Avatar(size: .lg) {
-                                    AvatarFallback(initials: "JD")
-                                }
-                                AvatarBadge(size: .lg)
-                            }
-                            Text("Jane Doe")
-                                .font(.system(size: 14, weight: .medium))
-                        }
-
-                        // Group
-                        AvatarGroup {
-                            ForEach(["A", "B", "C", "D"], id: \.self) { initial in
-                                Avatar(size: .sm) {
-                                    AvatarFallback(initials: initial)
-                                }
-                            }
-                            AvatarGroupCount(3)
-                        }
-                    }
-                }
+                .frame(maxWidth: 976)
 
                 Spacer(minLength: 20)
             }
+            .frame(maxWidth: .infinity)
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())
+    }
+
+    @ViewBuilder private var section_buttons: some View {
+        GlassSection(title: "Button Variants") {
+            ForEach(ButtonVariant.allCases, id: \.rawValue) { variant in
+                HStack(spacing: 8) {
+                    Text(variant.rawValue.capitalized)
+                        .font(.caption)
+                        .frame(width: 60, alignment: .leading)
+                        .foregroundStyle(.secondary)
+                    Button("Button") { }
+                        .shadcnButton(variant: variant)
+                }
+            }
+            ForEach(ButtonSize.allCases, id: \.rawValue) { size in
+                HStack(spacing: 8) {
+                    Text(size.rawValue)
+                        .font(.caption)
+                        .frame(width: 60, alignment: .leading)
+                        .foregroundStyle(.secondary)
+                    Button("Btn") { }
+                        .shadcnButton(size: size)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_badge: some View {
+        GlassSection(title: "Badge") {
+            ForEach(BadgeVariant.allCases, id: \.rawValue) { variant in
+                HStack(spacing: 8) {
+                    Text(variant.rawValue.capitalized)
+                        .font(.caption)
+                        .frame(width: 60, alignment: .leading)
+                        .foregroundStyle(.secondary)
+                    Badge(variant: variant) {
+                        Text(variant.rawValue.capitalized)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_input: some View {
+        GlassSection(title: "Input") {
+            VStack(spacing: 10) {
+                InputStateDemo()
+                Input("Disabled", text: .constant("Can't edit"))
+                    .disabled(true)
+            }
+        }
+        .environment(\.shadcnToken, token)
+    }
+
+    @ViewBuilder private var section_switch: some View {
+        GlassSection(title: "Switch") {
+            HStack(spacing: 24) {
+                switch_item(title: "default", isOn: true, style: .shadcnSwitch)
+                switch_item(title: "sm", isOn: false, style: ShadcnSwitchStyle(size: .sm))
+            }
+        }
+    }
+
+    private func switch_item(title: String, isOn: Bool, style: some ToggleStyle) -> some View {
+        VStack(spacing: 4) {
+            Toggle("", isOn: .constant(isOn))
+                .toggleStyle(style)
+                .labelsHidden()
+                .allowsHitTesting(false)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder private var section_separator: some View {
+        GlassSection(title: "Separator") {
+            VStack(spacing: 12) {
+                Text("Above").font(.caption).foregroundStyle(.secondary)
+                Separator()
+                Text("Below").font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Text("L").font(.caption2).foregroundStyle(.secondary)
+                    Separator(orientation: .vertical).frame(height: 20)
+                    Text("R").font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_avatar: some View {
+        GlassSection(title: "Avatar") {
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    Avatar(size: .sm) { AvatarFallback(initials: "S") }
+                    Avatar(size: .default) { AvatarFallback(initials: "M") }
+                    Avatar(size: .lg) { AvatarFallback(initials: "L") }
+                }
+                ZStack(alignment: .bottomTrailing) {
+                    Avatar(size: .lg) { AvatarFallback(initials: "JD") }
+                    AvatarBadge(size: .lg)
+                }
+                AvatarGroup {
+                    ForEach(["A", "B", "C"], id: \.self) { i in
+                        Avatar(size: .sm) { AvatarFallback(initials: i) }
+                    }
+                    AvatarGroupCount(5)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var section_card: some View {
+        GlassSection(title: "Card") {
+            Card {
+                CardHeader {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            CardTitle("Notifications")
+                            CardDescription("You have 3 unread messages.")
+                        }
+                        Spacer()
+                        Button { } label: {
+                            Image(systemName: "bell.badge")
+                        }
+                        .shadcnButton(variant: .ghost, size: .iconSm)
+                    }
+                }
+                CardContent {
+                    Text("Your subscription renews on August 1, 2026.")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                CardFooter {
+                    Button("Dismiss") { }.shadcnButton(variant: .outline, size: .sm)
+                    Button("View All") { }.shadcnButton(variant: .default, size: .sm)
+                }
+            }
+        }
     }
 }
 
@@ -297,6 +280,9 @@ struct Customizer: View {
         ScrollView {
             VStack(spacing: 20) {
                 ThemePicker(selectedTheme: $selectedTheme)
+                    .frame(maxWidth: 480)
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)], spacing: 16) {
 
                 // ── Button Customizer ──
                 GlassSection(title: "Button Customizer") {
@@ -507,9 +493,11 @@ struct Customizer: View {
                         }
                     }
                 }
+                } // end LazyVGrid
 
                 Spacer(minLength: 20)
             }
+            .frame(maxWidth: .infinity)
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())

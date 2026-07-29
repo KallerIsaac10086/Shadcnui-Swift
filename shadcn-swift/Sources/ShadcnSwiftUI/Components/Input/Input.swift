@@ -20,7 +20,6 @@ public struct Input: View {
     let isInvalid: Bool
 
     @FocusState private var isFocused: Bool
-    @State private var ringOpacity: Double = 0
 
     public init(
         _ placeholder: String = "",
@@ -42,13 +41,8 @@ public struct Input: View {
             .foregroundColor(token.foreground)
             .opacity(isEnabled ? 1 : 0.5)
             .focused($isFocused)
-            .onChange(of: isFocused) { _, focused in
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    ringOpacity = focused ? 1 : 0
-                }
-            }
-            .overlay(borderOverlay)
             .clipShape(RoundedRectangle(cornerRadius: token.radius))
+            .overlay(borderOverlay)
             .overlay(focusRingOverlay)
             .animation(.easeInOut(duration: 0.15), value: isFocused)
     }
@@ -67,11 +61,14 @@ public struct Input: View {
 
     @ViewBuilder
     private var focusRingOverlay: some View {
-        RoundedRectangle(cornerRadius: token.radius)
-            .strokeBorder(isInvalid
-                ? token.destructive.opacity(0.2 * ringOpacity)
-                : token.ring.opacity(0.5 * ringOpacity),
-                lineWidth: isFocused ? 3 : 0
-            )
+        if isFocused {
+            RoundedRectangle(cornerRadius: token.radius)
+                .strokeBorder(
+                    isInvalid
+                        ? token.destructive.opacity(0.2)
+                        : token.ring.opacity(0.5),
+                    lineWidth: 3
+                )
+        }
     }
 }

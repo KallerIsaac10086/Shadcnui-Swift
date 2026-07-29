@@ -28,6 +28,7 @@ public struct InputGroup<Content: View>: View {
         HStack(spacing: 0) {
             content()
         }
+        .environment(\.suppressInputBorder, true)
         .clipShape(RoundedRectangle(cornerRadius: token.radius))
         .overlay(
             RoundedRectangle(cornerRadius: token.radius)

@@ -3,48 +3,44 @@ import SwiftUI
 // MARK: - Sheet Side
 
 public enum SheetSide: String, CaseIterable, Sendable {
-    case top
-    case bottom
-    case leading
-    case trailing
+    case top, bottom, leading, trailing
 }
 
 // MARK: - Sheet Overlay Modifier
 
 /// A slide-in panel from any screen edge. Corresponds to `<Sheet>` in shadcn/ui.
-///
-/// Usage:
-/// ```swift
-/// @State var show = false
-/// Button("Open") { show = true }
-///     .sheetOverlay(isPresented: $show, side: .bottom) {
-///         SheetContent {
-///             SheetHeader {
-///                 SheetTitle("Title")
-///                 SheetDescription("Description")
-///             }
-///         }
-///     }
-/// ```
 public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let side: SheetSide
     @ViewBuilder let sheet: () -> SheetContent
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-            if isPresented {
-                Color.black.opacity(0.5)
-                    .ignoresSafeArea()
-                    .onTapGesture { dismiss() }
-                    .transition(.opacity)
+        content
+            .overlay {
+                if isPresented {
+                    ZStack(alignment: frameAlignment) {
+                        Color.black.opacity(0.5)
+                            .ignoresSafeArea()
+                            .onTapGesture { dismiss() }
+                            .transition(.opacity)
 
-                sheet()
-                    .transition(slideTransition)
+                        sheet()
+                            .transition(slideTransition)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea()
+                    .animation(.easeInOut(duration: 0.25), value: isPresented)
+                }
             }
+    }
+
+    private var frameAlignment: Alignment {
+        switch side {
+        case .top:      return .top
+        case .bottom:   return .bottom
+        case .leading:  return .leading
+        case .trailing: return .trailing
         }
-        .animation(.easeInOut(duration: 0.2), value: isPresented)
     }
 
     private var slideTransition: AnyTransition {
@@ -57,7 +53,7 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     }
 
     private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.2)) { isPresented = false }
+        withAnimation(.easeInOut(duration: 0.25)) { isPresented = false }
     }
 }
 
@@ -92,60 +88,26 @@ public struct SheetContent<Content: View>: View {
             content()
         }
         .frame(
-            maxWidth: side == .leading || side == .trailing ? 320 : .infinity,
+            maxWidth: side == .leading || side == .trailing ? 340 : .infinity,
             maxHeight: side == .top || side == .bottom ? nil : .infinity,
-            alignment: sideAlignment
+            alignment: .topLeading
         )
         .padding(20)
         .background(token.card)
         .clipShape(shape)
-        .shadow(color: .black.opacity(0.15), radius: 16, y: 4)
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: frameAlignment
-        )
-    }
-
-    private var sideAlignment: Alignment {
-        switch side {
-        case .top, .bottom: return .topLeading
-        case .leading: return .topLeading
-        case .trailing: return .topTrailing
-        }
-    }
-
-    private var frameAlignment: Alignment {
-        switch side {
-        case .top:      return .top
-        case .bottom:   return .bottom
-        case .leading:  return .leading
-        case .trailing: return .trailing
-        }
+        .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
     }
 
     private var shape: some Shape {
         switch side {
         case .top:
-            return AnyShape(UnevenRoundedRectangle(
-                bottomLeadingRadius: token.radius * 1.5,
-                bottomTrailingRadius: token.radius * 1.5
-            ))
+            return AnyShape(UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16))
         case .bottom:
-            return AnyShape(UnevenRoundedRectangle(
-                topLeadingRadius: token.radius * 1.5,
-                topTrailingRadius: token.radius * 1.5
-            ))
+            return AnyShape(UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 16))
         case .leading:
-            return AnyShape(UnevenRoundedRectangle(
-                bottomTrailingRadius: token.radius * 1.5,
-                topTrailingRadius: token.radius * 1.5
-            ))
+            return AnyShape(UnevenRoundedRectangle(bottomTrailingRadius: 16, topTrailingRadius: 16))
         case .trailing:
-            return AnyShape(UnevenRoundedRectangle(
-                topLeadingRadius: token.radius * 1.5,
-                bottomLeadingRadius: token.radius * 1.5
-            ))
+            return AnyShape(UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 16))
         }
     }
 }
@@ -156,20 +118,12 @@ private struct AnyShape: Shape, @unchecked Sendable {
     func path(in rect: CGRect) -> Path { _path(rect) }
 }
 
-// MARK: - Sheet Sub-components
+// MARK: - Sub-components
 
 public struct SheetHeader<Content: View>: View {
     @ViewBuilder let content: () -> Content
-
-    public init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
-
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            content()
-        }
-    }
+    public init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
+    public var body: some View { VStack(alignment: .leading, spacing: 6) { content() } }
 }
 
 public struct SheetTitle: View {

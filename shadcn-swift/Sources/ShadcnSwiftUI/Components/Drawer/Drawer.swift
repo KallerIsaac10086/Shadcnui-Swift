@@ -10,54 +10,53 @@ public struct DrawerModifier<DrawerContent: View>: ViewModifier {
     @State private var dragOffset: CGFloat = 0
 
     public func body(content: Content) -> some View {
-        ZStack(alignment: .bottom) {
-            content
-            if isPresented {
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                    .onTapGesture { dismiss() }
-                    .transition(.opacity)
+        content
+            .overlay {
+                if isPresented {
+                    GeometryReader { geo in
+                        ZStack(alignment: .bottom) {
+                            Color.black.opacity(0.4)
+                                .ignoresSafeArea()
+                                .onTapGesture { dismiss() }
+                                .transition(.opacity)
 
-                VStack(spacing: 0) {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.4))
-                        .frame(width: 36, height: 5)
-                        .padding(.top, 8)
-                    drawer()
-                        .offset(y: dragOffset)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { g in
-                                    if g.translation.height > 0 { dragOffset = g.translation.height }
-                                }
-                                .onEnded { g in
-                                    if g.translation.height > 100 { dismiss() }
-                                    else { withAnimation { dragOffset = 0 } }
-                                }
-                        )
+                            VStack(spacing: 0) {
+                                Capsule()
+                                    .fill(Color.gray.opacity(0.4))
+                                    .frame(width: 36, height: 5)
+                                    .padding(.top, 8)
+                                drawer()
+                                    .offset(y: dragOffset)
+                                    .gesture(
+                                        DragGesture()
+                                            .onChanged { g in
+                                                if g.translation.height > 0 { dragOffset = g.translation.height }
+                                            }
+                                            .onEnded { g in
+                                                if g.translation.height > 100 { dismiss() }
+                                                else { withAnimation { dragOffset = 0 } }
+                                            }
+                                    )
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(maxHeight: geo.size.height * (snapPoints.last ?? 0.5))
+                            .background(.regularMaterial)
+                            .clipShape(UnevenRoundedRectangle(
+                                topLeadingRadius: 16, topTrailingRadius: 16
+                            ))
+                            .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
+                            .transition(.move(edge: .bottom))
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .ignoresSafeArea()
+                        .animation(.easeInOut(duration: 0.25), value: isPresented)
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(maxHeight: screenHeight * (snapPoints.last ?? 0.5))
-                .background(.regularMaterial)
-                .clipShape(UnevenRoundedRectangle(
-                    topLeadingRadius: 16, topTrailingRadius: 16
-                ))
-                .transition(.move(edge: .bottom))
             }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isPresented)
     }
 
     private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.2)) { isPresented = false; dragOffset = 0 }
-    }
-
-    private var screenHeight: CGFloat {
-        #if os(macOS)
-        NSScreen.main?.frame.height ?? 800
-        #else
-        UIScreen.main.bounds.height
-        #endif
+        withAnimation(.easeInOut(duration: 0.25)) { isPresented = false; dragOffset = 0 }
     }
 }
 

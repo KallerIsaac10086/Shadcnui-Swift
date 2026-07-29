@@ -64,6 +64,7 @@ public struct AccordionItem<Content: View>: View {
 
     public var body: some View {
         VStack(spacing: 0) { content() }
+            .clipped()
             .overlay(alignment: .bottom) { Rectangle().fill(token.border).frame(height: 1) }
     }
 }
@@ -119,12 +120,21 @@ public struct AccordionContent<Content: View>: View {
         self.value = value; self.content = content
     }
 
+    private var isExpanded: Bool { expanded.contains(value) }
+
     public var body: some View {
-        if expanded.contains(value) {
-            content()
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+        VStack(alignment: .leading, spacing: 0) {
+            if isExpanded {
+                content()
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)).combined(with: .move(edge: .top)),
+                        removal: .opacity.combined(with: .scale(scale: 0.95, anchor: .top))
+                    ))
+            }
         }
+        .clipped()
+        .animation(.easeInOut(duration: 0.2), value: isExpanded)
     }
 }

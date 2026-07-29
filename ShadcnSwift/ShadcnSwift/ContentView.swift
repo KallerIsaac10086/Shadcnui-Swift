@@ -119,6 +119,10 @@ struct ComponentList: View {
     @State private var dateValue = Date()
     @State private var toasts: [ToastItem] = []
     @State private var nativeSelect = "light"
+    @State private var commandText = ""
+    @State private var otpCode = ""
+    @State private var searchText = ""
+    @State private var messageText = ""
 
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
@@ -611,26 +615,41 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_dropdownMenu: some View {
         GlassSection(title: "Dropdown Menu") {
-            Menu {
-                Button("Profile") {}
-                Button("Settings") {}
-                Divider()
-                Button("Logout", role: .destructive) {}
-            } label: {
-                Text("Open Menu").shadcnButton(variant: .outline, size: .sm)
-            }
+            DropdownMenu { }
+                .overlay(alignment: .top) {
+                    Menu {
+                        DropdownMenuContent {
+                            DropdownMenuLabel("Account")
+                            DropdownMenuItem("Profile") {}
+                            DropdownMenuItem("Settings") {}
+                            DropdownMenuSeparator()
+                            DropdownMenuItem("Logout", variant: .destructive) {}
+                        }
+                    } label: {
+                        Text("Open Menu").font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 12).padding(.vertical, 6)
+                            .background(token.card)
+                            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                            .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
+                    }
+                }
         }
     }
 
     @ViewBuilder private var section_contextMenu: some View {
         GlassSection(title: "ContextMenu") {
             Text("Long-press or right-click")
-                .font(.system(size: 14)).padding(12).background(token.card).clipShape(RoundedRectangle(cornerRadius: token.radius))
+                .font(.system(size: 14))
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(token.card)
+                .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
                 .shadcnContextMenu {
-                    Button("Copy") {}
-                    Button("Share") {}
-                    Divider()
-                    Button("Delete", role: .destructive) {}
+                    ContextMenuItem("Copy") { toasts.append(ToastItem(title: "Copied!", type: .success)) }
+                    ContextMenuItem("Share") { toasts.append(ToastItem(title: "Shared!", type: .info)) }
+                    ContextMenuSeparator()
+                    ContextMenuItem("Delete", variant: .destructive) { toasts.append(ToastItem(title: "Deleted", type: .error)) }
                 }
         }
     }
@@ -638,11 +657,21 @@ struct ComponentList: View {
     @ViewBuilder private var section_carousel: some View {
         GlassSection(title: "Carousel") {
             Carousel {
-                CarouselItem(index: 0) { Color.blue.opacity(0.3).frame(height: 100).overlay(Text("Page 1")).clipShape(RoundedRectangle(cornerRadius: 8)) }
-                CarouselItem(index: 1) { Color.green.opacity(0.3).frame(height: 100).overlay(Text("Page 2")).clipShape(RoundedRectangle(cornerRadius: 8)) }
-                CarouselItem(index: 2) { Color.orange.opacity(0.3).frame(height: 100).overlay(Text("Page 3")).clipShape(RoundedRectangle(cornerRadius: 8)) }
+                ForEach(0..<3, id: \.self) { i in
+                    CarouselItem(index: i) {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill([Color.blue, Color.green, Color.orange][i].opacity(0.3))
+                            .frame(height: 100)
+                            .overlay {
+                                VStack(spacing: 4) {
+                                    Text("Page \(i + 1)").font(.headline)
+                                    Text("Swipe to navigate").font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                    }
+                }
             }
-            .frame(height: 120)
+            .frame(height: 140)
         }
     }
 
@@ -676,11 +705,11 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_field: some View {
         GlassSection(title: "Field") {
-            Field(isInvalid: false) {
+            Field(isInvalid: !messageText.isEmpty && !messageText.contains("@")) {
                 FieldLabel("Email", required: true)
-                Input("Enter email", text: .constant(""))
+                Input("Enter email", text: $messageText, type: .email)
                 FieldDescription("We'll never share your email.")
-                FieldError("")
+                FieldError(!messageText.isEmpty && !messageText.contains("@") ? "Enter a valid email." : "")
             }
         }
     }
@@ -721,13 +750,19 @@ struct ComponentList: View {
         GlassSection(title: "Table") {
             Table {
                 TableHeader {
-                    TableRow {
-                        TableHead("Name"); TableHead("Status"); TableHead("Role")
-                    }
+                    TableRow { TableHead("Name"); TableHead("Status"); TableHead("Role") }
                 }
                 TableBody {
-                    TableRow { Text("John").tableCell(); Text("Active").tableCell(); Text("Admin").tableCell() }
-                    TableRow { Text("Jane").tableCell(); Text("Inactive").tableCell(); Text("User").tableCell() }
+                    TableRow {
+                        Text("John").tableCell()
+                        Badge(variant: .default) { Text("Active") }.tableCell()
+                        Text("Admin").tableCell()
+                    }
+                    TableRow {
+                        Text("Jane").tableCell()
+                        Badge(variant: .secondary) { Text("Inactive") }.tableCell()
+                        Text("User").tableCell()
+                    }
                 }
             }
         }
@@ -761,7 +796,7 @@ struct ComponentList: View {
         GlassSection(title: "InputGroup") {
             InputGroup {
                 InputGroupAddon(align: .inlineStart) { InputGroupText("$") }
-                Input("Amount", text: .constant(""))
+                Input("Amount", text: $searchText)
                 InputGroupAddon(align: .inlineEnd) { InputGroupText(".00") }
             }
         }
@@ -862,14 +897,22 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_command: some View {
         GlassSection(title: "Command") {
-            CommandDialog {
-                CommandInput(placeholder: "Type a command...", text: .constant(""))
-                CommandList {
-                    CommandGroup(heading: "Actions") {
-                        CommandItem("New File", shortcut: "⌘N") {}
-                        CommandItem("Open...", shortcut: "⌘O") {}
-                        CommandItem("Save", shortcut: "⌘S") {}
+            VStack(spacing: 8) {
+                CommandDialog {
+                    CommandInput(placeholder: "Type a command...", text: $commandText)
+                    CommandList {
+                        CommandGroup(heading: "Actions") {
+                            CommandItem("New File", shortcut: "⌘N") {}
+                            CommandItem("Open...", shortcut: "⌘O") {}
+                            CommandItem("Save", shortcut: "⌘S") {}
+                        }
+                        if !commandText.isEmpty {
+                            CommandEmpty("No results for \"\(commandText)\"")
+                        }
                     }
+                }
+                if !commandText.isEmpty {
+                    Button("Clear") { commandText = "" }.shadcnButton(variant: .ghost, size: .xs)
                 }
             }
         }
@@ -877,7 +920,10 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_inputOTP: some View {
         GlassSection(title: "InputOTP") {
-            InputOTP(code: .constant("1234"), length: 4)
+            VStack(spacing: 6) {
+                InputOTP(code: $otpCode, length: 6)
+                Text(otpCode.isEmpty ? "Enter code" : otpCode).font(.caption).foregroundStyle(.secondary)
+            }
         }
     }
 

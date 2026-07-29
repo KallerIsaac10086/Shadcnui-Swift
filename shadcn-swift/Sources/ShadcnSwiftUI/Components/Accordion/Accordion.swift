@@ -3,80 +3,58 @@ import SwiftUI
 // MARK: - Accordion
 
 /// A vertically stacked set of interactive headings. Corresponds to `<Accordion>` in shadcn/ui.
-///
-/// Supports single and multiple expansion modes.
-///
-/// Usage:
-/// ```swift
-/// Accordion(type: .single) {
-///     AccordionItem(value: "1") {
-///         AccordionTrigger("Is it accessible?")
-///         AccordionContent { Text("Yes. It adheres to WAI-ARIA patterns.") }
-///     }
-///     AccordionItem(value: "2") {
-///         AccordionTrigger("Is it styled?")
-///         AccordionContent { Text("Yes. Fully themeable.") }
-///     }
-/// }
-/// ```
-public enum AccordionType: String, CaseIterable, Sendable { case single, multiple }
-
 public struct Accordion<Content: View>: View {
+    public enum AccordionType: Sendable { case single, multiple }
+
     let type: AccordionType
     @ViewBuilder let content: () -> Content
     @State private var expanded: Set<String> = []
 
     public init(type: AccordionType = .single, @ViewBuilder content: @escaping () -> Content) {
-        self.type = type
-        self.content = content
+        self.type = type; self.content = content
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            content()
-        }
-        .environment(\.accordionExpanded, expanded)
-        .environment(\.accordionType, type)
-        .onPreferenceChange(AccordionToggleKey.self) { value in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                if type == .single {
-                    expanded = expanded.contains(value) ? [] : [value]
-                } else {
-                    if expanded.contains(value) { expanded.remove(value) }
-                    else { expanded.insert(value) }
+        VStack(spacing: 0) { content() }
+            .environment(\.accordionExpanded, expanded)
+            .environment(\.accordionToggleAction, AccordionToggleAction { value in
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if type == .single {
+                        expanded = expanded.contains(value) ? [] : [value]
+                    } else {
+                        if expanded.contains(value) { expanded.remove(value) } else { expanded.insert(value) }
+                    }
                 }
-            }
-        }
+            })
     }
 }
 
 // MARK: - Environment
 
-private struct AccordionExpandedKey: EnvironmentKey { nonisolated(unsafe) static let defaultValue: Set<String> = [] }
-private struct AccordionTypeKey: EnvironmentKey { static let defaultValue: AccordionType = .single }
+private struct AccordionExpandedKey: EnvironmentKey { static let defaultValue: Set<String> = [] }
+private struct AccordionToggleActionKey: EnvironmentKey {
+    static let defaultValue: AccordionToggleAction = AccordionToggleAction { _ in }
+}
+
+struct AccordionToggleAction: Sendable {
+    let toggle: @Sendable (String) -> Void
+}
 
 extension EnvironmentValues {
     var accordionExpanded: Set<String> {
         get { self[AccordionExpandedKey.self] }
         set { self[AccordionExpandedKey.self] = newValue }
     }
-    var accordionType: AccordionType {
-        get { self[AccordionTypeKey.self] }
-        set { self[AccordionTypeKey.self] = newValue }
+    var accordionToggleAction: AccordionToggleAction {
+        get { self[AccordionToggleActionKey.self] }
+        set { self[AccordionToggleActionKey.self] = newValue }
     }
-}
-
-struct AccordionToggleKey: PreferenceKey {
-    nonisolated(unsafe) static var defaultValue: String = ""
-    static func reduce(value: inout String, nextValue: () -> String) { value = nextValue() }
 }
 
 // MARK: - AccordionItem
 
 public struct AccordionItem<Content: View>: View {
     @Environment(\.shadcnToken) private var token
-    @Environment(\.accordionExpanded) private var expanded
-
     let value: String
     @ViewBuilder let content: () -> Content
 
@@ -85,12 +63,8 @@ public struct AccordionItem<Content: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            content()
-        }
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(token.border).frame(height: 1)
-        }
+        VStack(spacing: 0) { content() }
+            .overlay(alignment: .bottom) { Rectangle().fill(token.border).frame(height: 1) }
     }
 }
 
@@ -99,6 +73,7 @@ public struct AccordionItem<Content: View>: View {
 public struct AccordionTrigger<Label: View>: View {
     @Environment(\.shadcnToken) private var token
     @Environment(\.accordionExpanded) private var expanded
+    @Environment(\.accordionToggleAction) private var toggleAction
 
     let value: String
     @ViewBuilder let label: () -> Label
@@ -106,7 +81,6 @@ public struct AccordionTrigger<Label: View>: View {
     public init(value: String, @ViewBuilder label: @escaping () -> Label) {
         self.value = value; self.label = label
     }
-
     public init(_ title: String, value: String) where Label == Text {
         self.value = value; self.label = { Text(title) }
     }
@@ -114,9 +88,7 @@ public struct AccordionTrigger<Label: View>: View {
     private var isExpanded: Bool { expanded.contains(value) }
 
     public var body: some View {
-        Button {
-            let _ = isExpanded // read for animation trigger
-        } label: {
+        Button { toggleAction.toggle(value) } label: {
             HStack {
                 label()
                     .font(.system(size: 14, weight: .medium))
@@ -133,7 +105,6 @@ public struct AccordionTrigger<Label: View>: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .preference(key: AccordionToggleKey.self, value: value)
     }
 }
 
@@ -141,7 +112,6 @@ public struct AccordionTrigger<Label: View>: View {
 
 public struct AccordionContent<Content: View>: View {
     @Environment(\.accordionExpanded) private var expanded
-
     let value: String
     @ViewBuilder let content: () -> Content
 
@@ -149,10 +119,8 @@ public struct AccordionContent<Content: View>: View {
         self.value = value; self.content = content
     }
 
-    private var isExpanded: Bool { expanded.contains(value) }
-
     public var body: some View {
-        if isExpanded {
+        if expanded.contains(value) {
             content()
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)

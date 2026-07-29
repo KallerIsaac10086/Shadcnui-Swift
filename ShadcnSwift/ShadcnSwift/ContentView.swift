@@ -3,7 +3,18 @@ import ShadcnSwiftUI
 
 struct ContentView: View {
     @State private var selectedTheme = "zinc"
-    @State private var buttonVariant: ButtonVariant = .default
+
+    // ── Button customizer state ──
+    @State private var customVariant: ButtonVariant = .default
+    @State private var cornerRadius: Double = 0      // 0 = use default
+    @State private var isFullWidth = false
+    @State private var shadowRadius: Double = 0
+    @State private var buttonLabel = "Customize Me"
+
+    // ── Card customizer state ──
+    @State private var cardCorner: Double = 15       // default ~15pt
+    @State private var cardBorderWidth: Double = 1
+    @State private var cardShowCustomBorder = false
 
     var body: some View {
         ScrollView {
@@ -28,6 +39,186 @@ struct ContentView: View {
                     Text("Current: \(currentTheme.name.capitalized)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+
+                // ──────── Live Button Customizer ────────
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Live Button Customizer")
+                        .font(.headline)
+
+                    // Variant picker
+                    HStack {
+                        Text("Variant")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Picker("", selection: $customVariant) {
+                            ForEach(ButtonVariant.allCases, id: \.rawValue) { v in
+                                Text(v.rawValue.capitalized).tag(v)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    // Corner radius
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Corner radius")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(cornerRadius == 0 ? "default" : "\(Int(cornerRadius))pt")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $cornerRadius, in: 0...50, step: 1)
+                    }
+
+                    // Shadow
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Shadow")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(Int(shadowRadius))pt")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $shadowRadius, in: 0...20, step: 1)
+                    }
+
+                    // Full width toggle
+                    Toggle("Full width", isOn: $isFullWidth)
+                        .font(.caption)
+
+                    // Label text
+                    HStack {
+                        Text("Label")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        TextField("", text: $buttonLabel)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(size: 14))
+                    }
+
+                    // Live preview
+                    HStack {
+                        Text("Preview")
+                            .font(.caption)
+                            .frame(width: 80, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Button(buttonLabel) { }
+                            .shadcnButton(variant: customVariant, size: .default) { label in
+                                var view = label
+                                if cornerRadius > 0 {
+                                    view = view.cornerRadius(cornerRadius)
+                                }
+                                if isFullWidth {
+                                    view = view.frame(maxWidth: .infinity)
+                                }
+                                if shadowRadius > 0 {
+                                    view = view.shadow(
+                                        color: currentTheme.light.primary.opacity(0.35),
+                                        radius: shadowRadius,
+                                        y: shadowRadius / 2
+                                    )
+                                }
+                                return AnyView(view)
+                            }
+                    }
+                }
+                .padding(.horizontal, 20)
+
+                // ──────── Live Card Customizer ────────
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Live Card Customizer")
+                        .font(.headline)
+
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Corner radius")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(Int(cardCorner))pt")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $cardCorner, in: 0...40, step: 1)
+                    }
+
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Border width")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(String(format: "%.0fpt", cardBorderWidth))
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $cardBorderWidth, in: 0...6, step: 0.5)
+                    }
+
+                    Toggle("Colored border (uses theme primary)", isOn: $cardShowCustomBorder)
+                        .font(.caption)
+
+                    Card(customStyle: { card in
+                        AnyView(
+                            card
+                                .cornerRadius(cardCorner)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: cardCorner)
+                                        .strokeBorder(
+                                            cardShowCustomBorder
+                                                ? currentTheme.light.primary
+                                                : currentTheme.light.border,
+                                            lineWidth: cardBorderWidth
+                                        )
+                                )
+                        )
+                    }) {
+                        CardHeader {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    CardTitle("Interactive Card")
+                                    CardDescription("Adjust the sliders above to see changes.")
+                                }
+                                Spacer()
+                            }
+                        }
+                        CardContent {
+                            HStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Corner: \(Int(cardCorner))pt")
+                                    Text("Border: \(String(format: "%.1f", cardBorderWidth))pt")
+                                }
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                                Spacer()
+                                Circle()
+                                    .fill(cardShowCustomBorder
+                                        ? currentTheme.light.primary
+                                        : Color.clear)
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .strokeBorder(currentTheme.light.border, lineWidth: 1)
+                                    )
+                            }
+                        }
+                        CardFooter {
+                            Button("Reset") {
+                                cardCorner = 15
+                                cardBorderWidth = 1
+                                cardShowCustomBorder = false
+                            }
+                            .shadcnButton(variant: .outline, size: .sm)
+                        }
+                    }
+                    .padding(.horizontal, 20)
                 }
 
                 // Section: Button Variants
@@ -67,95 +258,6 @@ struct ContentView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-
-                // Section: Custom Styled Buttons
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Custom Styled Buttons (like shadcn className)")
-                        .font(.headline)
-
-                    HStack(spacing: 8) {
-                        Text("Rounded")
-                            .font(.caption)
-                            .frame(width: 80, alignment: .leading)
-                            .foregroundStyle(.secondary)
-                        Button("Pill") { }
-                            .shadcnButton(variant: .default) { label in
-                                AnyView(label.cornerRadius(999))
-                            }
-                    }
-
-                    HStack(spacing: 8) {
-                        Text("Full width")
-                            .font(.caption)
-                            .frame(width: 80, alignment: .leading)
-                            .foregroundStyle(.secondary)
-                        Button("Wide Button") { }
-                            .shadcnButton(variant: .outline) { label in
-                                AnyView(label.frame(maxWidth: .infinity))
-                            }
-                    }
-
-                    HStack(spacing: 8) {
-                        Text("Shadow")
-                            .font(.caption)
-                            .frame(width: 80, alignment: .leading)
-                            .foregroundStyle(.secondary)
-                        Button("Glow") { }
-                            .shadcnButton(variant: .default) { label in
-                                AnyView(
-                                    label.shadow(color: currentTheme.light.primary.opacity(0.4), radius: 8, y: 4)
-                                )
-                            }
-                    }
-                }
-                .padding(.horizontal, 20)
-
-                // Section: Custom Styled Card
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Custom Styled Card")
-                        .font(.headline)
-                        .padding(.horizontal, 20)
-
-                    Card(customStyle: { card in
-                        AnyView(
-                            card
-                                .background(Color.blue.opacity(0.08))
-                                .cornerRadius(24)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .strokeBorder(currentTheme.light.primary.opacity(0.3), lineWidth: 2)
-                                )
-                        )
-                    }) {
-                        CardHeader {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    CardTitle("Premium Plan", customStyle: { title in
-                                        AnyView(
-                                            title
-                                                .font(.system(size: 20, weight: .bold))
-                                                .foregroundColor(currentTheme.light.primary)
-                                        )
-                                    })
-                                    CardDescription("Custom styled with className-like API")
-                                }
-                                Spacer()
-                            }
-                        }
-                        CardContent {
-                            Text("This card uses `customStyle` closures on both Card and CardTitle — the SwiftUI equivalent of shadcn/ui's `className` prop.")
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
-                        }
-                        CardFooter {
-                            Button("Learn More") { }
-                                .shadcnButton(variant: .default, size: .sm) { label in
-                                    AnyView(label.cornerRadius(999))
-                                }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
 
                 // Section: Card
                 VStack(alignment: .leading, spacing: 12) {

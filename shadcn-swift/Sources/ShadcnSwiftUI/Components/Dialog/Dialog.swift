@@ -6,7 +6,7 @@ public enum DialogSize: Sendable {
     case sm, md, lg, xl, full
 }
 
-// MARK: - Dialog Overlay Modifier
+// MARK: - Dialog Modifier
 
 /// A modal dialog. Corresponds to `<Dialog>` in shadcn/ui.
 public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
@@ -14,10 +14,8 @@ public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
     @ViewBuilder let dialog: () -> DialogContent
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-
-            if isPresented {
+        content
+            .fullScreenCover(isPresented: $isPresented) {
                 ZStack {
                     Color.black.opacity(0.5)
                         .ignoresSafeArea()
@@ -27,9 +25,9 @@ public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
                     dialog()
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }
+                .animation(.easeInOut(duration: 0.2), value: isPresented)
+                .presentationBackground(.clear)
             }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isPresented)
     }
 
     private func dismiss() {

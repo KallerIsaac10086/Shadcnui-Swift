@@ -6,7 +6,7 @@ public enum SheetSide: String, CaseIterable, Sendable {
     case top, bottom, leading, trailing
 }
 
-// MARK: - Sheet Overlay Modifier
+// MARK: - Sheet Modifier
 
 /// A slide-in panel from any screen edge. Corresponds to `<Sheet>` in shadcn/ui.
 public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
@@ -15,9 +15,8 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     @ViewBuilder let sheet: () -> SheetContent
 
     public func body(content: Content) -> some View {
-        ZStack {
-            content
-            if isPresented {
+        content
+            .fullScreenCover(isPresented: $isPresented) {
                 ZStack(alignment: frameAlignment) {
                     Color.black.opacity(0.5)
                         .ignoresSafeArea()
@@ -28,9 +27,8 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
                         .transition(slideTransition)
                 }
                 .animation(.easeInOut(duration: 0.25), value: isPresented)
+                .presentationBackground(.clear)
             }
-        }
-        .animation(.easeInOut(duration: 0.25), value: isPresented)
     }
 
     private var frameAlignment: Alignment {

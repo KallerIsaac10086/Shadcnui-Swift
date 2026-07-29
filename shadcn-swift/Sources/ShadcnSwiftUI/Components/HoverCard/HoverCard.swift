@@ -34,6 +34,7 @@ public struct HoverCardModifier<CardContent: View>: ViewModifier {
             .overlay(alignment: .bottom) {
                 if isVisible {
                     card()
+                        .fixedSize(horizontal: true, vertical: false)
                         .offset(y: 8)
                         .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }

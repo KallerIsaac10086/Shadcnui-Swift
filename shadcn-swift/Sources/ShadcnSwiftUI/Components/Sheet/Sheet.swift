@@ -16,21 +16,18 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .overlay {
-                if isPresented {
-                    ZStack(alignment: frameAlignment) {
-                        Color.black.opacity(0.5)
-                            .ignoresSafeArea()
-                            .onTapGesture { dismiss() }
-                            .transition(.opacity)
+            .fullScreenCover(isPresented: $isPresented) {
+                ZStack(alignment: frameAlignment) {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .onTapGesture { dismiss() }
+                        .transition(.opacity)
 
-                        sheet()
-                            .transition(slideTransition)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.25), value: isPresented)
+                    sheet()
+                        .transition(slideTransition)
                 }
+                .animation(.easeInOut(duration: 0.25), value: isPresented)
+                .presentationBackground(.clear)
             }
     }
 

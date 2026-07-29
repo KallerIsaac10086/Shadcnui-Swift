@@ -15,21 +15,18 @@ public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .overlay {
-                if isPresented {
-                    ZStack {
-                        Color.black.opacity(0.5)
-                            .ignoresSafeArea()
-                            .onTapGesture { dismiss() }
-                            .transition(.opacity)
+            .fullScreenCover(isPresented: $isPresented) {
+                ZStack {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .onTapGesture { dismiss() }
+                        .transition(.opacity)
 
-                        dialog()
-                            .transition(.scale(scale: 0.95).combined(with: .opacity))
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.2), value: isPresented)
+                    dialog()
+                        .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }
+                .animation(.easeInOut(duration: 0.2), value: isPresented)
+                .presentationBackground(.clear)
             }
     }
 
@@ -70,7 +67,7 @@ public struct DialogContent<Content: View>: View {
         VStack(alignment: .leading, spacing: 16) {
             content()
         }
-        .frame(maxWidth: maxWidth)
+        .frame(maxWidth: .infinity)
         .padding(24)
         .background(token.card)
         .foregroundColor(token.cardForeground)
@@ -80,13 +77,14 @@ public struct DialogContent<Content: View>: View {
                 .strokeBorder(token.border, lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
+        .frame(maxWidth: maxWidth)
     }
 
     private var maxWidth: CGFloat? {
         switch size {
-        case .sm:   return 384
-        case .md:   return 512
+        case .sm:   return 420
+        case .md:   return 540
         case .lg:   return 672
         case .xl:   return 896
         case .full: return nil

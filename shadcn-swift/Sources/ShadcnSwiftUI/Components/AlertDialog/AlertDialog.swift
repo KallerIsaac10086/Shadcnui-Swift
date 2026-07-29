@@ -26,32 +26,30 @@ public struct AlertDialogModifier<CardContent: View>: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .overlay {
-                if isPresented {
-                    ZStack {
-                        Color.black.opacity(0.5)
-                            .ignoresSafeArea()
-                            .transition(.opacity)
+            .fullScreenCover(isPresented: $isPresented) {
+                ZStack {
+                    Color.black.opacity(0.5)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
 
-                        VStack(spacing: 16) {
-                            self.content()
-                        }
-                        .frame(maxWidth: size == .sm ? 320 : 400)
-                        .padding(24)
-                        .background(DesignToken.defaultValue.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(DesignToken.defaultValue.border, lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
-                        .padding(.horizontal, 24)
-                        .transition(.scale(scale: 0.95).combined(with: .opacity))
+                    VStack(spacing: 16) {
+                        self.content()
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .ignoresSafeArea()
-                    .animation(.easeInOut(duration: 0.2), value: isPresented)
+                    .frame(maxWidth: .infinity)
+                    .padding(24)
+                    .background(DesignToken.defaultValue.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(DesignToken.defaultValue.border, lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: size == .sm ? 360 : 440)
+                    .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }
+                .animation(.easeInOut(duration: 0.2), value: isPresented)
+                .presentationBackground(.clear)
             }
     }
 }

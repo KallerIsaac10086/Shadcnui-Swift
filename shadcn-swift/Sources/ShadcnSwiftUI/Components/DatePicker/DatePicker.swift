@@ -1,32 +1,99 @@
 import SwiftUI
 
-// MARK: - DatePicker
+// MARK: - ShadcnDatePicker
 
-/// A date picker component. Corresponds to `<DatePicker>` in shadcn/ui.
+/// A popover-based date picker. Corresponds to `<DatePicker>` in shadcn/ui.
 ///
 /// Usage:
 /// ```swift
 /// @State var date = Date()
-/// ShadcnDatePicker("Select date", selection: $date)
-/// ShadcnDatePicker("Range", selection: $range, mode: .range)
+/// ShadcnDatePicker(selection: $date)
 /// ```
-@available(iOS 16.0, macOS 13.0, *)
 public struct ShadcnDatePicker: View {
     @Environment(\.shadcnToken) private var token
 
-    public enum Mode: Sendable { case single, range }
-    let label: String
     @Binding var selection: Date
-    let mode: Mode
-    let range: ClosedRange<Date>?
+    @State private var isOpen = false
 
-    public init(_ label: String = "", selection: Binding<Date>, mode: Mode = .single, range: ClosedRange<Date>? = nil) {
-        self.label = label; self._selection = selection; self.mode = mode; self.range = range
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        return f
+    }()
+
+    public init(selection: Binding<Date>) {
+        self._selection = selection
     }
 
+    // MARK: - Body
+
     public var body: some View {
-        DatePicker(label, selection: $selection, in: range ?? Date.distantPast...Date.distantFuture, displayedComponents: .date)
-            .datePickerStyle(.graphical)
-            .tint(token.primary)
+        ZStack(alignment: .topTrailing) {
+            // Full-screen backdrop
+            if isOpen {
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeOut(duration: 0.15)) { isOpen = false }
+                    }
+            }
+
+            VStack(alignment: .trailing, spacing: 4) {
+                triggerButton
+
+                if isOpen {
+                    calendarPanel
+                        .fixedSize(horizontal: true, vertical: false)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .zIndex(100)
+                }
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: isOpen)
+    }
+
+    // MARK: - Trigger
+
+    private var triggerButton: some View {
+        Button {
+            withAnimation(.easeOut(duration: 0.15)) { isOpen.toggle() }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 14))
+                    .foregroundStyle(token.mutedForeground)
+
+                Text(dateFormatter.string(from: selection))
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundStyle(token.foreground)
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: 36)
+            .padding(.horizontal, 12)
+            .background(token.background)
+            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+            .overlay(
+                RoundedRectangle(cornerRadius: token.radius)
+                    .strokeBorder(token.border, lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .frame(width: 240)
+    }
+
+    // MARK: - Calendar panel
+
+    private var calendarPanel: some View {
+        CalendarView(selection: $selection, onSelect: { isOpen = false })
+            .background(token.popover)
+            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+            .overlay(
+                RoundedRectangle(cornerRadius: token.radius)
+                    .strokeBorder(token.border, lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
     }
 }

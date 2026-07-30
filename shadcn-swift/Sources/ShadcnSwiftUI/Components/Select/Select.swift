@@ -35,52 +35,55 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
     }
 
     public var body: some View {
-        // Trigger button
-        Button { isOpen = true } label: {
-            HStack {
-                Text("\(String(describing: selection))")
-                    .font(.system(size: 14))
-                    .foregroundColor(token.foreground)
-                Spacer()
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(token.mutedForeground)
+        ZStack {
+            // Trigger button
+            Button { isOpen = true } label: {
+                HStack {
+                    Text("\(String(describing: selection))")
+                        .font(.system(size: 14))
+                        .foregroundColor(token.foreground)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(token.mutedForeground)
+                }
+                .frame(height: 36)
+                .padding(.horizontal, 12)
+                .background(token.card)
+                .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
+                .contentShape(Rectangle())
             }
-            .frame(height: 36)
-            .padding(.horizontal, 12)
-            .background(token.card)
-            .clipShape(RoundedRectangle(cornerRadius: token.radius))
-            .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.borderless)
-        .background(
-            GeometryReader { geo in
-                Color.clear
-                    .preference(key: TriggerFrameKey.self, value: geo.frame(in: .global))
-            }
-        )
-        .onPreferenceChange(TriggerFrameKey.self) { triggerFrame = $0 }
-        // Environment for SelectItem inside the fullScreenCover
-        .environment(\.selectBinding, SelectBinding { value in
-            selection = value as! Value
-            isOpen = false
-        })
-        .environment(\.selectCurrentValue, selection)
-        // Full-screen dropdown overlay
-        .fullScreenCover(isPresented: $isOpen) {
-            SelectDropdownContainer(
-                triggerFrame: triggerFrame,
-                token: token,
-                isOpen: $isOpen,
-                content: content
+            .buttonStyle(.borderless)
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .preference(key: TriggerFrameKey.self, value: geo.frame(in: .global))
+                }
             )
+            .onPreferenceChange(TriggerFrameKey.self) { triggerFrame = $0 }
             .environment(\.selectBinding, SelectBinding { value in
                 selection = value as! Value
                 isOpen = false
             })
             .environment(\.selectCurrentValue, selection)
+
+            // Dropdown overlay
+            if isOpen {
+                SelectDropdownContainer(
+                    triggerFrame: triggerFrame,
+                    token: token,
+                    isOpen: $isOpen,
+                    content: content
+                )
+                .environment(\.selectBinding, SelectBinding { value in
+                    selection = value as! Value
+                    isOpen = false
+                })
+                .environment(\.selectCurrentValue, selection)
+            }
         }
+        .animation(.easeInOut(duration: 0.15), value: isOpen)
     }
 }
 
@@ -119,14 +122,13 @@ private struct SelectDropdownContainer<Content: View>: View {
             .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
         }
         .animation(.easeInOut(duration: 0.15), value: isOpen)
-        .presentationBackground(.clear)
     }
 }
 
 // MARK: - Trigger Frame Preference
 
 private struct TriggerFrameKey: PreferenceKey {
-    static var defaultValue: CGRect = .zero
+    nonisolated(unsafe) static var defaultValue: CGRect = .zero
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
         value = nextValue()
     }

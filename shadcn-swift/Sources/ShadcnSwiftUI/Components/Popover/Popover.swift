@@ -1,36 +1,35 @@
 import SwiftUI
 
-// MARK: - PopoverModifier
+// MARK: - Popover Modifier
 
-/// Attaches a popover to a trigger view, rendered via Portal for correct z-index.
-/// Corresponds to `<Popover>` → `<PopoverTrigger>` + `<PopoverContent>` in shadcn/ui.
-public struct PopoverModifier<Panel: View>: ViewModifier {
+/// A popover that appears next to its anchor. Corresponds to `<Popover>` in shadcn/ui.
+///
+/// Usage:
+/// ```swift
+/// @State var showPopover = false
+/// Button("Toggle") { showPopover.toggle() }
+///     .popover(isPresented: $showPopover) {
+///         PopoverContent {
+///             PopoverTitle("Title")
+///             PopoverDescription("Description")
+///         }
+///     }
+/// ```
+public struct PopoverModifier<PopoverContent: View>: ViewModifier {
     @Binding var isPresented: Bool
-    @ViewBuilder let panel: () -> Panel
-    @State private var portalID = UUID()
+    @ViewBuilder let popover: () -> PopoverContent
 
-    public init(isPresented: Binding<Bool>, @ViewBuilder panel: @escaping () -> Panel) {
-        self._isPresented = isPresented
-        self.panel = panel
-    }
-
-    public func body(content trigger: Content) -> some View {
-        trigger
-            .anchorPreference(key: PortalAnchorKey.self, value: .bounds) {
-                isPresented ? [portalID: $0] : [:]
-            }
-            .onChange(of: isPresented) { _, presented in
-                if presented {
-                    PortalHost.shared.show(
-                        id: portalID,
-                        content: AnyView(PopoverPanel { panel() }),
-                        anchor: .topLeading
-                    )
-                } else {
-                    PortalHost.shared.hide(id: portalID)
+    public func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if isPresented {
+                    popover()
+                        .fixedSize(horizontal: true, vertical: false)
+                        .transition(.scale(scale: 0.95).combined(with: .opacity))
+                        .offset(y: 8)
                 }
             }
-            .onDisappear { PortalHost.shared.hide(id: portalID) }
+            .animation(.easeInOut(duration: 0.15), value: isPresented)
     }
 }
 
@@ -39,21 +38,26 @@ public extension View {
         isPresented: Binding<Bool>,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        modifier(PopoverModifier(isPresented: isPresented, panel: content))
+        modifier(PopoverModifier(isPresented: isPresented, popover: content))
     }
 }
 
-// MARK: - Internal panel wrapper
+// MARK: - PopoverContent
 
-private struct PopoverPanel<Content: View>: View {
+public struct PopoverContent<Content: View>: View {
     @Environment(\.shadcnToken) private var token
+
     @ViewBuilder let content: () -> Content
 
-    var body: some View {
+    public init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             content()
         }
-        .frame(minWidth: 200, maxWidth: 288)
+        .frame(minWidth: 200)
         .padding(16)
         .background(token.popover)
         .clipShape(RoundedRectangle(cornerRadius: token.radius))
@@ -65,21 +69,7 @@ private struct PopoverPanel<Content: View>: View {
     }
 }
 
-// MARK: - PopoverContent / Header / Title / Description
-
-public struct PopoverContent<Content: View>: View {
-    @ViewBuilder let content: () -> Content
-    public init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
-    public var body: some View { content() }
-}
-
-public struct PopoverHeader<Content: View>: View {
-    @ViewBuilder let content: () -> Content
-    public init(@ViewBuilder content: @escaping () -> Content) { self.content = content }
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 4) { content() }
-    }
-}
+// MARK: - Sub-components
 
 public struct PopoverTitle: View {
     @Environment(\.shadcnToken) private var token
@@ -97,9 +87,4 @@ public struct PopoverDescription: View {
     public var body: some View {
         Text(text).font(.system(size: 13)).foregroundColor(token.mutedForeground)
     }
-}
-
-public struct PopoverAnchor: View {
-    public init() {}
-    public var body: some View { Color.clear.frame(width: 0, height: 0) }
 }

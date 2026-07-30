@@ -135,16 +135,5 @@ public struct CommandEmpty: View {
 public struct CommandSeparator: View {
     @Environment(\.shadcnToken) private var token
     public init() {}
-    public var body: some View { Rectangle().fill(token.border).frame(height: 1).padding(.horizontal, -4) }
-}
-
-// MARK: - CommandShortcut
-
-public struct CommandShortcut: View {
-    @Environment(\.shadcnToken) private var token
-    let key: String
-    public init(_ key: String) { self.key = key }
-    public var body: some View {
-        Text(key).font(.system(size: 12, design: .monospaced)).foregroundColor(token.mutedForeground)
-    }
+    public var body: some View { Rectangle().fill(token.border).frame(height: 1) }
 }

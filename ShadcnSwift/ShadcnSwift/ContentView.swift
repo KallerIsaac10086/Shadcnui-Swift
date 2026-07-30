@@ -49,27 +49,37 @@ struct ContentView: View {
 // MARK: - Shared Theme Picker
 
 struct ThemePicker: View {
+    @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
 
+    private let themes: [(String, String, Color)] = [
+        ("zinc", "Zinc", .primary), ("neutral", "Neutral", .brown), ("stone", "Stone", .orange),
+        ("red", "Red", .red), ("rose", "Rose", .pink), ("orange", "Orange", .orange),
+        ("yellow", "Yellow", .yellow), ("green", "Green", .green), ("teal", "Teal", .teal),
+        ("blue", "Blue", .blue), ("indigo", "Indigo", .indigo), ("violet", "Violet", .purple),
+        ("purple", "Purple", .purple), ("pink", "Pink", .pink),
+    ]
+
     var body: some View {
-        VStack(spacing: 8) {
-            Picker("Theme", selection: $selectedTheme) {
-                Text("Zinc").tag("zinc")
-                Text("Neutral").tag("neutral")
-                Text("Stone").tag("stone")
-                Text("Red").tag("red")
-                Text("Rose").tag("rose")
-                Text("Orange").tag("orange")
-                Text("Yellow").tag("yellow")
-                Text("Green").tag("green")
-                Text("Teal").tag("teal")
-                Text("Blue").tag("blue")
-                Text("Indigo").tag("indigo")
-                Text("Violet").tag("violet")
-                Text("Purple").tag("purple")
-                Text("Pink").tag("pink")
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(themes, id: \.0) { theme in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { selectedTheme = theme.0 }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Circle().fill(theme.2).frame(width: 10, height: 10)
+                            Text(theme.1).font(.system(size: 12, weight: selectedTheme == theme.0 ? .semibold : .regular))
+                        }
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(selectedTheme == theme.0 ? token.accent : token.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(selectedTheme == theme.0 ? token.ring : token.border, lineWidth: 1))
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
-            .pickerStyle(.menu)
+            .padding(.horizontal, 16).padding(.vertical, 10)
         }
     }
 }
@@ -77,19 +87,26 @@ struct ThemePicker: View {
 // MARK: - Glass Section Wrapper
 
 struct GlassSection<Content: View>: View {
+    @Environment(\.shadcnToken) private var token
     let title: String
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.headline)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(token.mutedForeground)
+                .textCase(.uppercase)
+                .tracking(0.5)
             content()
         }
-        .padding(16)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(14)
+        .background(token.card)
+        .clipShape(RoundedRectangle(cornerRadius: token.radius))
+        .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
     }
 }
+
 
 // MARK: - Tab 1: Component List
 
@@ -140,10 +157,27 @@ struct ComponentList: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                ThemePicker(selectedTheme: $selectedTheme)
-                    .frame(maxWidth: 480)
+                // Brand header
+                VStack(spacing: 6) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "square.grid.2x2.fill")
+                            .font(.title2)
+                            .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        Text("ShadcnSwift")
+                            .font(.system(size: 22, weight: .bold))
+                        Spacer()
+                    }
+                    Text("Beautifully designed components for SwiftUI")
+                        .font(.system(size: 14))
+                        .foregroundColor(token.mutedForeground)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 16).padding(.top, 16)
 
-                LazyVGrid(columns: columns, spacing: 16) {
+                ThemePicker(selectedTheme: $selectedTheme)
+                    .frame(maxWidth: .infinity)
+
+                LazyVGrid(columns: columns, spacing: 14) {
                     section_buttons; section_toggle
                     section_badge; section_checkbox
                     section_radio; section_switch
@@ -1209,7 +1243,8 @@ struct Customizer: View {
         ScrollView {
             VStack(spacing: 20) {
                 ThemePicker(selectedTheme: $selectedTheme)
-                    .frame(maxWidth: 480)
+                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity)
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)], spacing: 16) {
 

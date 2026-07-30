@@ -128,6 +128,7 @@ struct ComponentList: View {
     @State private var selectValue = "light"
     @State private var comboboxQuery = ""
     @State private var comboboxSelection: String?
+    @State private var comboboxOpen = false
     @State private var carouselIndex = 0
     @State private var accordionExpanded = false
     @State private var paginationPage = 1
@@ -137,6 +138,7 @@ struct ComponentList: View {
     @State private var otpCode = ""
     @State private var searchText = ""
     @State private var messageText = ""
+    @State private var menubarOpen = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
@@ -188,6 +190,10 @@ struct ComponentList: View {
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())
+        // Render Combobox/Menubar dropdowns ABOVE all content (portal to root).
+        .overlayPreferenceValue(PortalAnchorKey.self) { anchors in
+            PortalOverlay(anchors: anchors)
+        }
         .dialog(isPresented: $showDialog) {
             DialogContent(size: .sm) {
                 DialogHeader {
@@ -569,7 +575,13 @@ struct ComponentList: View {
         GlassSection(title: "Combobox") {
             let fruits = ["Apple", "Banana", "Blueberry", "Cherry", "Grape", "Mango", "Orange", "Peach", "Strawberry"]
             let filtered = comboboxQuery.isEmpty ? fruits : fruits.filter { $0.lowercased().contains(comboboxQuery.lowercased()) }
-            Combobox(query: $comboboxQuery, selection: $comboboxSelection, items: filtered)
+            Combobox {
+                ComboboxMenu("Select fruit…", selection: $comboboxSelection, query: $comboboxQuery) {
+                    ForEach(filtered, id: \.self) { fruit in
+                        ComboboxItem(fruit, value: fruit, selection: $comboboxSelection)
+                    }
+                }
+            }
         }
     }
 
@@ -945,14 +957,21 @@ struct ComponentList: View {
         GlassSection(title: "Menubar") {
             Menubar {
                 MenubarMenu("File") {
-                    MenubarItem("New") {}
-                    MenubarItem("Open") {}
-                    MenubarSeparator()
-                    MenubarItem("Quit", variant: .destructive) {}
+                    MenubarContent {
+                        MenubarItem("New Tab", shortcut: "⌘T") {}
+                        MenubarItem("New Window", shortcut: "⌘N") {}
+                        MenubarSeparator()
+                        MenubarItem("Quit", variant: .destructive) {}
+                    }
                 }
                 MenubarMenu("Edit") {
-                    MenubarItem("Copy") {}
-                    MenubarItem("Paste") {}
+                    MenubarContent {
+                        MenubarItem("Undo", shortcut: "⌘Z") {}
+                        MenubarItem("Redo", shortcut: "⇧⌘Z") {}
+                        MenubarSeparator()
+                        MenubarItem("Copy", shortcut: "⌘C") {}
+                        MenubarItem("Paste", shortcut: "⌘V") {}
+                    }
                 }
             }
         }

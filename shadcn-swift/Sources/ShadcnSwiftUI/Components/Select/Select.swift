@@ -1,9 +1,9 @@
 import SwiftUI
 
-// MARK: - Environment Keys
+// MARK: - Environment
 
 /// Action dispatched when a SelectItem is tapped.
-struct SelectAction: Sendable {
+fileprivate struct SelectAction: Sendable {
     let handler: @Sendable (AnyHashable) -> Void
 }
 
@@ -12,10 +12,10 @@ private struct SelectActionKey: EnvironmentKey {
 }
 
 private struct SelectValueKey: EnvironmentKey {
-    static let defaultValue: AnyHashable = ""
+    nonisolated(unsafe) static let defaultValue: AnyHashable = ""
 }
 
-extension EnvironmentValues {
+fileprivate extension EnvironmentValues {
     var selectAction: SelectAction {
         get { self[SelectActionKey.self] }
         set { self[SelectActionKey.self] = newValue }
@@ -26,27 +26,23 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Select
+// MARK: - Select (Root)
 
-/// A custom-styled dropdown select. Corresponds to `<Select>` in shadcn/ui.
+/// A custom dropdown select. Corresponds to `<Select>` in shadcn/ui.
 ///
-/// Uses `fullScreenCover` so the dropdown list is never clipped by parent containers.
-/// No GeometryReader / PreferenceKey — avoids "bound preference updated multiple
-/// times per frame" warnings.
-///
+/// Usage:
 /// ```swift
 /// @State var selection = "light"
-/// Select(placeholder: "Theme", selection: $selection) {
+/// Select(selection: $selection, placeholder: "Theme") {
 ///     SelectItem("Light", value: "light")
 ///     SelectItem("Dark", value: "dark")
-///     SelectItem("System", value: "system")
 /// }
 /// ```
 public struct Select<Value: Hashable & Sendable, Content: View>: View {
     @Environment(\.shadcnToken) private var token
 
-    let placeholder: String
     @Binding var selection: Value
+    let placeholder: String
     @ViewBuilder let content: () -> Content
     @State private var isOpen = false
 
@@ -55,14 +51,40 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
         selection: Binding<Value>,
         @ViewBuilder content: @escaping () -> Content
     ) {
-        self.placeholder = placeholder
         self._selection = selection
+        self.placeholder = placeholder
         self.content = content
     }
 
     public var body: some View {
+        ZStack(alignment: .top) {
+            // Invisible backdrop when open — tap to dismiss
+            if isOpen {
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.15)) { isOpen = false }
+                    }
+            }
+
+            VStack(spacing: 0) {
+                // Trigger
+                trigger
+
+                // Dropdown
+                if isOpen {
+                    contentView
+                        .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: isOpen)
+    }
+
+    @ViewBuilder
+    private var trigger: some View {
         Button {
-            isOpen = true
+            withAnimation(.easeInOut(duration: 0.15)) { isOpen.toggle() }
         } label: {
             HStack(spacing: 8) {
                 Text(String(describing: selection))
@@ -85,63 +107,33 @@ public struct Select<Value: Hashable & Sendable, Content: View>: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .fullScreenCover(isPresented: $isOpen) {
-            SelectOverlay(
-                selection: $selection,
-                isPresented: $isOpen,
-                content: content
-            )
-            .presentationBackground(.clear)
-        }
+        .zIndex(1)
     }
-}
 
-// MARK: - Select Overlay
-
-/// Full-screen transparent overlay that hosts the dropdown list.
-private struct SelectOverlay<Value: Hashable & Sendable, Content: View>: View {
-    @Environment(\.shadcnToken) private var token
-
-    @Binding var selection: Value
-    @Binding var isPresented: Bool
-    @ViewBuilder let content: () -> Content
-
-    var body: some View {
-        ZStack {
-            // Dimmed backdrop — tap anywhere to dismiss
-            Color.black.opacity(0.3)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        isPresented = false
-                    }
-                }
-
-            // Options card
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        content()
-                    }
-                }
-                .frame(maxHeight: 280)
+    @ViewBuilder
+    private var contentView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                content()
             }
-            .background(token.card)
-            .clipShape(RoundedRectangle(cornerRadius: token.radius * 1.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: token.radius * 1.5)
-                    .strokeBorder(token.border, lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.15), radius: 16, y: 8)
-            .padding(.horizontal, 24)
         }
+        .frame(maxHeight: 280)
+        .frame(minWidth: 180)
+        .background(token.card)
+        .clipShape(RoundedRectangle(cornerRadius: token.radius * 1.5))
+        .overlay(
+            RoundedRectangle(cornerRadius: token.radius * 1.5)
+                .strokeBorder(token.border, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.15), radius: 16, y: 8)
         .environment(\.selectAction, SelectAction { value in
             if let v = value as? Value {
                 selection = v
-                isPresented = false
+                isOpen = false
             }
         })
         .environment(\.selectValue, AnyHashable(selection))
+        .zIndex(2)
     }
 }
 
@@ -172,6 +164,7 @@ public struct SelectItem<Value: Hashable & Sendable>: View {
             HStack(spacing: 10) {
                 Text(label)
                     .font(.system(size: 14))
+                    .foregroundStyle(token.foreground)
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")

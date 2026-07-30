@@ -17,23 +17,27 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
     public func body(content: Content) -> some View {
         ZStack {
             content
-
             if isPresented {
-                ZStack(alignment: frameAlignment) {
-                    Color.black.opacity(0.5)
-                        .ignoresSafeArea()
-                        .onTapGesture { dismiss() }
-                        .transition(.opacity)
-
-                    sheet()
-                        .transition(slideTransition)
-                }
+                overlay
+                sheet()
+                    .environment(\.dialogDismissAction, DialogDismissAction(handler: dismiss))
+                    .transition(.move(edge: slideEdge))
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: isPresented)
+        .ignoresSafeArea()
+        .animation(.easeOut(duration: 0.25), value: isPresented)
     }
 
-    private var frameAlignment: Alignment {
+    @ViewBuilder
+    private var overlay: some View {
+        Color.black.opacity(0.3)
+            .background(.ultraThinMaterial)
+            .ignoresSafeArea()
+            .onTapGesture { dismiss() }
+            .transition(.opacity)
+    }
+
+    private var slideEdge: Edge {
         switch side {
         case .top:      return .top
         case .bottom:   return .bottom
@@ -42,24 +46,16 @@ public struct SheetOverlayModifier<SheetContent: View>: ViewModifier {
         }
     }
 
-    private var slideTransition: AnyTransition {
-        switch side {
-        case .top:      return .move(edge: .top)
-        case .bottom:   return .move(edge: .bottom)
-        case .leading:  return .move(edge: .leading)
-        case .trailing: return .move(edge: .trailing)
-        }
-    }
-
     private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.25)) { isPresented = false }
+        isPresented = false
     }
 }
 
 public extension View {
+    /// Presents a slide-in panel from a screen edge.
     func sheetOverlay<Content: View>(
         isPresented: Binding<Bool>,
-        side: SheetSide = .bottom,
+        side: SheetSide = .trailing,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         modifier(SheetOverlayModifier(isPresented: isPresented, side: side, sheet: content))
@@ -68,17 +64,28 @@ public extension View {
 
 // MARK: - SheetContent
 
+/// The sheet panel surface with optional close button.
 public struct SheetContent<Content: View>: View {
     @Environment(\.shadcnToken) private var token
+    @Environment(\.dialogDismissAction) private var dismissAction
 
     let side: SheetSide
+    let showCloseButton: Bool
+    let width: CGFloat
+    let height: CGFloat?
     @ViewBuilder let content: () -> Content
 
     public init(
-        side: SheetSide = .bottom,
+        side: SheetSide = .trailing,
+        showCloseButton: Bool = true,
+        width: CGFloat = 340,
+        height: CGFloat? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.side = side
+        self.showCloseButton = showCloseButton
+        self.width = width
+        self.height = height
         self.content = content
     }
 
@@ -87,34 +94,78 @@ public struct SheetContent<Content: View>: View {
             content()
         }
         .frame(
-            maxWidth: side == .leading || side == .trailing ? 340 : .infinity,
-            maxHeight: side == .top || side == .bottom ? nil : .infinity,
+            maxWidth: side == .leading || side == .trailing ? width : .infinity,
+            maxHeight: side == .top || side == .bottom ? height : .infinity,
             alignment: .topLeading
         )
-        .padding(20)
+        .padding(edgeInsets)
         .background(token.card)
         .clipShape(shape)
+        .overlay(alignment: .topTrailing) {
+            if showCloseButton {
+                closeButton
+            }
+        }
         .shadow(color: .black.opacity(0.2), radius: 24, y: 8)
     }
 
-    private var shape: some Shape {
+    @ViewBuilder
+    private var closeButton: some View {
+        Button {
+            dismissAction.handler()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(token.mutedForeground)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .padding(12)
+    }
+
+    /// Padding with 0 on the screen-edge side so the panel sits flush.
+    private var edgeInsets: EdgeInsets {
+        switch side {
+        case .top:      return EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20)
+        case .bottom:   return EdgeInsets(top: 20, leading: 20, bottom: 0, trailing: 20)
+        case .leading:  return EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 20)
+        case .trailing: return EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 0)
+        }
+    }
+
+    private var shape: UnevenRoundedRectangle {
         switch side {
         case .top:
-            return AnyShape(UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16))
+            return UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16)
         case .bottom:
-            return AnyShape(UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 16))
+            return UnevenRoundedRectangle(topLeadingRadius: 16, topTrailingRadius: 16)
         case .leading:
-            return AnyShape(UnevenRoundedRectangle(bottomTrailingRadius: 16, topTrailingRadius: 16))
+            return UnevenRoundedRectangle(bottomTrailingRadius: 16, topTrailingRadius: 16)
         case .trailing:
-            return AnyShape(UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 16))
+            return UnevenRoundedRectangle(topLeadingRadius: 16, bottomLeadingRadius: 16)
         }
     }
 }
 
-private struct AnyShape: Shape, @unchecked Sendable {
-    let _path: @Sendable (CGRect) -> Path
-    init<S: Shape>(_ shape: S) { _path = { shape.path(in: $0) } }
-    func path(in rect: CGRect) -> Path { _path(rect) }
+// MARK: - SheetClose
+
+/// A button that dismisses the nearest sheet when tapped.
+public struct SheetClose<Label: View>: View {
+    @Environment(\.dialogDismissAction) private var dismissAction
+    @ViewBuilder let label: () -> Label
+
+    public init(@ViewBuilder label: @escaping () -> Label) {
+        self.label = label
+    }
+
+    public var body: some View {
+        Button {
+            dismissAction.handler()
+        } label: {
+            label()
+        }
+    }
 }
 
 // MARK: - Sub-components

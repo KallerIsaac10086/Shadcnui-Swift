@@ -556,15 +556,10 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_select: some View {
         GlassSection(title: "Select") {
-            Select(selection: $selectValue) {
-                SelectTrigger {
-                    SelectValue(placeholder: "Theme")
-                }
-                SelectContent {
-                    SelectItem("Light", value: "light", isSelected: selectValue == "light")
-                    SelectItem("Dark", value: "dark", isSelected: selectValue == "dark")
-                    SelectItem("System", value: "system", isSelected: selectValue == "system")
-                }
+            Select(placeholder: "Theme", selection: $selectValue) {
+                SelectItem("Light", value: "light")
+                SelectItem("Dark", value: "dark")
+                SelectItem("System", value: "system")
             }
         }
     }

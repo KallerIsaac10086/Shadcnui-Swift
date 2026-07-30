@@ -840,8 +840,11 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_datePicker: some View {
         GlassSection(title: "DatePicker") {
-            if #available(iOS 16.0, macOS 13.0, *) {
-                ShadcnDatePicker("Date", selection: $dateValue)
+            VStack(spacing: 8) {
+                ShadcnDatePicker(selection: $dateValue)
+                Text("Popover calendar — tap to select a date")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
     }

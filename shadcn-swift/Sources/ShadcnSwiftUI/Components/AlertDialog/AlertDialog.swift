@@ -15,8 +15,10 @@ public struct AlertDialogModifier<CardContent: View>: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        content
-            .fullScreenCover(isPresented: $isPresented) {
+        ZStack {
+            content
+
+            if isPresented {
                 ZStack {
                     Color.black.opacity(0.5)
                         .ignoresSafeArea()
@@ -38,9 +40,9 @@ public struct AlertDialogModifier<CardContent: View>: ViewModifier {
                     .frame(maxWidth: size == .sm ? 360 : 440)
                     .transition(.scale(scale: 0.95).combined(with: .opacity))
                 }
-                .animation(.easeInOut(duration: 0.2), value: isPresented)
-                .presentationBackground(.clear)
             }
+        }
+        .animation(.easeInOut(duration: 0.2), value: isPresented)
     }
 }
 

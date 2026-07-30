@@ -183,6 +183,56 @@ struct ComponentList: View {
             .padding(16)
         }
         .background(token.background.ignoresSafeArea())
+        .dialog(isPresented: $showDialog) {
+            DialogContent(size: .sm) {
+                DialogHeader {
+                    DialogTitle("Edit Profile")
+                    DialogDescription("Make changes to your profile here. Click X or tap outside to close.")
+                }
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("Name")
+                            .font(.system(size: 14))
+                            .foregroundStyle(token.foreground)
+                            .frame(width: 60, alignment: .leading)
+                        TextField("", text: .constant("John Doe"))
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 14))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(token.muted)
+                            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    }
+                    HStack {
+                        Text("Email")
+                            .font(.system(size: 14))
+                            .foregroundStyle(token.foreground)
+                            .frame(width: 60, alignment: .leading)
+                        TextField("", text: .constant("john@example.com"))
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 14))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(token.muted)
+                            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    }
+                }
+                DialogFooter {
+                    DialogClose {
+                        Text("Cancel")
+                            .font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(token.muted)
+                            .foregroundStyle(token.foreground)
+                            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    }
+                    .buttonStyle(.borderless)
+                    Button("Save") { showDialog = false }
+                        .shadcnButton(size: .sm)
+                }
+            }
+        }
     }
 
     @ViewBuilder private var section_buttons: some View {
@@ -522,19 +572,11 @@ struct ComponentList: View {
     @ViewBuilder private var section_dialog: some View {
         GlassSection(title: "Dialog") {
             VStack(spacing: 8) {
-                Button("Open Dialog") { showDialog = true }.shadcnButton(variant: .outline, size: .sm)
-            }
-            .dialog(isPresented: $showDialog) {
-                DialogContent(size: .sm) {
-                    DialogHeader {
-                        DialogTitle("Edit Profile")
-                        DialogDescription("Make changes to your profile here.")
-                    }
-                    DialogFooter {
-                        Button("Cancel") { showDialog = false }.shadcnButton(variant: .outline, size: .sm)
-                        Button("Save") { showDialog = false }.shadcnButton(size: .sm)
-                    }
-                }
+                Button("Open Dialog") { showDialog = true }
+                    .shadcnButton(variant: .outline, size: .sm)
+                Text("Global dialog — covers entire screen with blur backdrop")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
     }

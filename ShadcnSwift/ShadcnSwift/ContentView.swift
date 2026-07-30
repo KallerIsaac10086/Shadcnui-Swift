@@ -5,12 +5,11 @@ import ShadcnSwiftUI
 
 struct ContentView: View {
     @State private var selectedTheme = "zinc"
-    @State private var toasts: [ToastItem] = []
 
     var body: some View {
         ZStack {
             TabView {
-                ComponentList(selectedTheme: $selectedTheme, toasts: $toasts)
+                ComponentList(selectedTheme: $selectedTheme)
                     .tabItem {
                         Label("Components", systemImage: "square.grid.2x2")
                     }
@@ -22,11 +21,8 @@ struct ContentView: View {
             }
             .shadcnTheme(currentTheme)
 
-            // Global toast overlay
-            VStack {
-                ToastView(toasts: $toasts)
-            }
-            .allowsHitTesting(false)
+            // Global toast overlay (Sonner pattern)
+            Toaster()
         }
     }
 
@@ -100,7 +96,6 @@ struct GlassSection<Content: View>: View {
 struct ComponentList: View {
     @Environment(\.shadcnToken) private var token
     @Binding var selectedTheme: String
-    @Binding var toasts: [ToastItem]
 
     @State private var switchDefault = false
     @State private var switchSm = false
@@ -128,7 +123,6 @@ struct ComponentList: View {
     @State private var selectValue = "light"
     @State private var comboboxQuery = ""
     @State private var comboboxSelection: String?
-    @State private var comboboxOpen = false
     @State private var carouselIndex = 0
     @State private var accordionExpanded = false
     @State private var paginationPage = 1
@@ -138,7 +132,6 @@ struct ComponentList: View {
     @State private var otpCode = ""
     @State private var searchText = ""
     @State private var messageText = ""
-    @State private var menubarOpen = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)
@@ -728,10 +721,10 @@ struct ComponentList: View {
                 .clipShape(RoundedRectangle(cornerRadius: token.radius))
                 .overlay(RoundedRectangle(cornerRadius: token.radius).strokeBorder(token.border, lineWidth: 1))
                 .shadcnContextMenu {
-                    ContextMenuItem("Copy") { toasts.append(ToastItem(title: "Copied!", type: .success)) }
-                    ContextMenuItem("Share") { toasts.append(ToastItem(title: "Shared!", type: .info)) }
+                    ContextMenuItem("Copy") { ToastHost.shared.success("Copied!") }
+                    ContextMenuItem("Share") { ToastHost.shared.info("Shared!") }
                     ContextMenuSeparator()
-                    ContextMenuItem("Delete", variant: .destructive) { toasts.append(ToastItem(title: "Deleted", type: .error)) }
+                    ContextMenuItem("Delete", variant: .destructive) { ToastHost.shared.error("Deleted") }
                 }
         }
     }
@@ -978,10 +971,14 @@ struct ComponentList: View {
     }
 
     @ViewBuilder private var section_toast: some View {
-        GlassSection(title: "Toast") {
+        GlassSection(title: "Toast (Sonner)") {
             VStack(spacing: 8) {
-                Button("Show Success") { toasts.append(ToastItem(title: "Saved", description: "Your changes have been saved.", type: .success)) }.shadcnButton(variant: .outline, size: .sm)
-                Button("Show Error") { toasts.append(ToastItem(title: "Error", description: "Something went wrong.", type: .error)) }.shadcnButton(variant: .outline, size: .sm)
+                Button("Show Success") {
+                    ToastHost.shared.success("Saved", description: "Your changes have been saved.", action: ToastAction(label: "Undo") { ToastHost.shared.info("Undone") })
+                }.shadcnButton(variant: .outline, size: .sm)
+                Button("Show Error") {
+                    ToastHost.shared.error("Error", description: "Something went wrong.")
+                }.shadcnButton(variant: .outline, size: .sm)
             }
         }
     }

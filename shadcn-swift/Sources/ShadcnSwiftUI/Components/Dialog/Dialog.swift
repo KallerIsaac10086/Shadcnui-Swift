@@ -9,16 +9,16 @@ public enum DialogSize: Sendable {
 // MARK: - Dismiss Action
 
 /// Passed down via environment so child views can dismiss the dialog.
-private struct DialogDismissAction: Sendable {
+struct DialogDismissAction: Sendable {
     let handler: @MainActor @Sendable () -> Void
 }
 
-private struct DialogDismissKey: EnvironmentKey {
+struct DialogDismissKey: EnvironmentKey {
     nonisolated(unsafe) static let defaultValue = DialogDismissAction { }
 }
 
 extension EnvironmentValues {
-    fileprivate var dialogDismissAction: DialogDismissAction {
+    var dialogDismissAction: DialogDismissAction {
         get { self[DialogDismissKey.self] }
         set { self[DialogDismissKey.self] = newValue }
     }
@@ -56,7 +56,7 @@ public struct DialogOverlayModifier<DialogContent: View>: ViewModifier {
     }
 
     private func dismiss() {
-        withAnimation(.easeOut(duration: 0.15)) { isPresented = false }
+        isPresented = false
     }
 }
 

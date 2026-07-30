@@ -116,8 +116,13 @@ struct ComponentList: View {
     @State private var sliderValue: Double = 0.5
     @State private var tabSelection = "account"
     @State private var showDialog = false
-    @State private var showSheet = false
-    @State private var showDrawer = false
+    @State private var showSheetRight = false
+    @State private var showSheetLeft = false
+    @State private var showSheetBottom = false
+    @State private var showSheetTop = false
+    @State private var showDrawerBottom = false
+    @State private var showDrawerLeft = false
+    @State private var showDrawerRight = false
     @State private var showAlertDialog = false
     @State private var showPopover = false
     @State private var selectValue = "light"
@@ -233,6 +238,13 @@ struct ComponentList: View {
                 }
             }
         }
+        .sheetOverlay(isPresented: $showSheetRight, side: .trailing) { demoSheetContent(side: .trailing) }
+        .sheetOverlay(isPresented: $showSheetLeft, side: .leading) { demoSheetContent(side: .leading) }
+        .sheetOverlay(isPresented: $showSheetBottom, side: .bottom) { demoSheetContent(side: .bottom, height: 320) }
+        .sheetOverlay(isPresented: $showSheetTop, side: .top) { demoSheetContent(side: .top, height: 320) }
+        .drawer(isPresented: $showDrawerBottom, side: .bottom, snapPoint: 0.45) { demoDrawerContent(side: .bottom) }
+        .drawer(isPresented: $showDrawerLeft, side: .leading) { demoDrawerContent(side: .leading) }
+        .drawer(isPresented: $showDrawerRight, side: .trailing) { demoDrawerContent(side: .trailing) }
     }
 
     @ViewBuilder private var section_buttons: some View {
@@ -583,35 +595,42 @@ struct ComponentList: View {
 
     @ViewBuilder private var section_sheet: some View {
         GlassSection(title: "Sheet") {
-            Button("Open Sheet") { showSheet = true }.shadcnButton(variant: .outline, size: .sm)
-                .sheetOverlay(isPresented: $showSheet, side: .bottom) {
-                    SheetContent {
-                        SheetHeader {
-                            SheetTitle("Sheet Title")
-                            SheetDescription("This is a sheet panel.")
-                        }
-                        SheetFooter {
-                            Button("Close") { showSheet = false }.shadcnButton(size: .sm)
-                        }
-                    }
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Button("← Left") { showSheetLeft = true }
+                        .shadcnButton(variant: .outline, size: .sm)
+                    Button("Right →") { showSheetRight = true }
+                        .shadcnButton(variant: .outline, size: .sm)
                 }
+                HStack(spacing: 8) {
+                    Button("↑ Top") { showSheetTop = true }
+                        .shadcnButton(variant: .outline, size: .sm)
+                    Button("↓ Bottom") { showSheetBottom = true }
+                        .shadcnButton(variant: .outline, size: .sm)
+                }
+                Text("Slides in from any edge with blur backdrop")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     @ViewBuilder private var section_drawer: some View {
         GlassSection(title: "Drawer") {
-            Button("Open Drawer") { showDrawer = true }.shadcnButton(variant: .outline, size: .sm)
-                .drawer(isPresented: $showDrawer, snapPoints: [0.4]) {
-                    DrawerContent {
-                        DrawerHeader {
-                            DrawerTitle("Drawer")
-                            DrawerDescription("Swipe down to dismiss.")
-                        }
-                        DrawerFooter {
-                            Button("Close") { showDrawer = false }.shadcnButton(size: .sm)
-                        }
-                    }
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Button("← Left") { showDrawerLeft = true }
+                        .shadcnButton(variant: .outline, size: .sm)
+                    Button("Right →") { showDrawerRight = true }
+                        .shadcnButton(variant: .outline, size: .sm)
                 }
+                Button("↑ Bottom ↑") { showDrawerBottom = true }
+                    .shadcnButton(variant: .outline, size: .sm)
+                    .frame(maxWidth: .infinity)
+                Text("Draggable bottom panel with handle")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -1028,6 +1047,101 @@ struct ComponentList: View {
                 ShadcnToggle(isPressed: .constant(true)) { Image(systemName: "bold").frame(width: 14) }
                 ShadcnToggle(isPressed: .constant(false)) { Image(systemName: "italic").frame(width: 14) }
                 ShadcnToggle(isPressed: .constant(true)) { Image(systemName: "underline").frame(width: 14) }
+            }
+        }
+    }
+
+    // MARK: - Sheet Demo Content
+
+    @ViewBuilder
+    fileprivate func demoSheetContent(side: SheetSide, height: CGFloat? = nil) -> some View {
+        SheetContent(side: side, height: height) {
+            SheetHeader {
+                SheetTitle("Sheet (\(side.rawValue.capitalized))")
+                SheetDescription("Slides in from the \(side.rawValue) edge.")
+            }
+            VStack(spacing: 12) {
+                Text("You can place any content here.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(token.mutedForeground)
+                Divider()
+                HStack(spacing: 12) {
+                    Image(systemName: "bell").foregroundStyle(token.mutedForeground)
+                    Text("Notifications").font(.system(size: 14))
+                    Spacer()
+                    Text("3")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(token.primaryForeground)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(token.primary)
+                        .clipShape(Capsule())
+                }
+                HStack(spacing: 12) {
+                    Image(systemName: "gear").foregroundStyle(token.mutedForeground)
+                    Text("Settings").font(.system(size: 14))
+                    Spacer()
+                }
+                HStack(spacing: 12) {
+                    Image(systemName: "person").foregroundStyle(token.mutedForeground)
+                    Text("Profile").font(.system(size: 14))
+                    Spacer()
+                }
+                Spacer()
+            }
+            SheetFooter {
+                SheetClose {
+                    Text("Close")
+                        .font(.system(size: 14, weight: .medium))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(token.muted)
+                        .foregroundStyle(token.foreground)
+                        .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                }
+                .buttonStyle(.borderless)
+            }
+        }
+    }
+
+    // MARK: - Drawer Demo Content
+
+    @ViewBuilder
+    fileprivate func demoDrawerContent(side: DrawerSide) -> some View {
+        DrawerContent(side: side, showCloseButton: side == .leading || side == .trailing) {
+            DrawerHeader {
+                DrawerTitle("Drawer (\(side.rawValue.capitalized))")
+                DrawerDescription(side == .bottom ? "Swipe down to dismiss" : "Tap backdrop or X to dismiss.")
+            }
+            VStack(spacing: 12) {
+                Text("Drawer content for \(side.rawValue) side.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(token.mutedForeground)
+                Divider()
+                HStack(spacing: 12) {
+                    Image(systemName: "star").foregroundStyle(token.mutedForeground)
+                    Text("Favorites").font(.system(size: 14))
+                    Spacer()
+                }
+                HStack(spacing: 12) {
+                    Image(systemName: "clock").foregroundStyle(token.mutedForeground)
+                    Text("Recent").font(.system(size: 14))
+                    Spacer()
+                }
+            }
+            if side == .bottom {
+                DrawerFooter {
+                    DrawerClose {
+                        Text("Close")
+                            .font(.system(size: 14, weight: .medium))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(token.muted)
+                            .foregroundStyle(token.foreground)
+                            .clipShape(RoundedRectangle(cornerRadius: token.radius))
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
         }
     }
